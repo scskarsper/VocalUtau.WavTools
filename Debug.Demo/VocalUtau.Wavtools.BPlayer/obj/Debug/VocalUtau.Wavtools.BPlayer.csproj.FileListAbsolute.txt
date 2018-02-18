@@ -1,0 +1,11 @@
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\bin\Debug\VocalUtau.Wavtools.BPlayer.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\bin\Debug\VocalUtau.Wavtools.BPlayer.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\bin\Debug\VocalUtau.WavTools.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\bin\Debug\NAudio.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\bin\Debug\VocalUtau.WavTools.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.csprojResolveAssemblyReference.cache
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.Form1.resources
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.Properties.Resources.resources
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.csproj.GenerateResource.Cache
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.pdb

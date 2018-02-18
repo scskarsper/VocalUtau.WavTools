@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.WavTools", "VocalUtau.WavTools.csproj", "{B7EE4878-4670-49B5-A94A-8C0DFDA02B6F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.Demo.Host", "VocalUtau.Wavtools.Demo.Host\VocalUtau.Wavtools.Demo.Host.csproj", "{31893911-1D30-464B-8D7A-D6B3FC68E2B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.Client", "VocalUtau.Wavtools.Client\VocalUtau.Wavtools.Client.csproj", "{85E13EB2-1FF6-4D30-9876-27E1E97BCD5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.Demo.Client", "VocalUtau.Wavtools.Demo.Client\VocalUtau.Wavtools.Demo.Client.csproj", "{A4338E97-E643-4AEE-B085-0BAC4C4BAA8B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.BPlayer", "Debug.Demo\VocalUtau.Wavtools.BPlayer\VocalUtau.Wavtools.BPlayer.csproj", "{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,14 +17,14 @@ Global
 		{B7EE4878-4670-49B5-A94A-8C0DFDA02B6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7EE4878-4670-49B5-A94A-8C0DFDA02B6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7EE4878-4670-49B5-A94A-8C0DFDA02B6F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{31893911-1D30-464B-8D7A-D6B3FC68E2B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{31893911-1D30-464B-8D7A-D6B3FC68E2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{31893911-1D30-464B-8D7A-D6B3FC68E2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{31893911-1D30-464B-8D7A-D6B3FC68E2B3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4338E97-E643-4AEE-B085-0BAC4C4BAA8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A4338E97-E643-4AEE-B085-0BAC4C4BAA8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A4338E97-E643-4AEE-B085-0BAC4C4BAA8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A4338E97-E643-4AEE-B085-0BAC4C4BAA8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85E13EB2-1FF6-4D30-9876-27E1E97BCD5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85E13EB2-1FF6-4D30-9876-27E1E97BCD5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85E13EB2-1FF6-4D30-9876-27E1E97BCD5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85E13EB2-1FF6-4D30-9876-27E1E97BCD5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

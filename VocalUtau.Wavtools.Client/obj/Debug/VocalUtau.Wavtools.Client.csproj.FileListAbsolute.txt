@@ -1,0 +1,8 @@
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\bin\Debug\VocalUtau.Wavtools.Client.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\bin\Debug\VocalUtau.Wavtools.Client.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\bin\Debug\VocalUtau.WavTools.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\bin\Debug\NAudio.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\bin\Debug\VocalUtau.WavTools.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\obj\Debug\VocalUtau.Wavtools.Client.csprojResolveAssemblyReference.cache
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\obj\Debug\VocalUtau.Wavtools.Client.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Client\obj\Debug\VocalUtau.Wavtools.Client.pdb
