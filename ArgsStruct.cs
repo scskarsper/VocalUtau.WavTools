@@ -5,7 +5,7 @@ using System.Text;
 
 namespace VocalUtau.WavTools
 {
-    class ArgsStruct
+    public class ArgsStruct
     {
         public ArgsStruct()
         {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace VocalUtau.WavTools
+namespace VocalUtau.WavTools.Debug
 {
-    class WavTool_Prg
+    class Debug_WavTool
     {
         string outfile_wavhdr;
         string outfile_wavdat;
@@ -20,7 +20,7 @@ namespace VocalUtau.WavTools
             get { return _isfinished; }
         }
 
-        public WavTool_Prg(string Outputfilename,bool splitHeader=false)
+        public Debug_WavTool(string Outputfilename,bool splitHeader=false)
         {
            outfile_wavhdr = Outputfilename + ".whd";
            outfile_wavdat = Outputfilename + ".dat";

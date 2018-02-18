@@ -7,7 +7,7 @@ using System.Text;
 
 namespace VocalUtau.WavTools
 {
-    class WavFile_Datas
+    public class WavFile_Datas
     {
         const int wfh_samplerate = 44100;
         const int wfh_channels = 1;

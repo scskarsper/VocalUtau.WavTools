@@ -6,13 +6,37 @@ using System.Text;
 
 namespace VocalUtau.WavTools
 {
-    class WavFile_Heads
+    public class WavFile_Heads
     {
-        const int wfh_samplerate=44100;
+        const int wfh_samplerate = 44100;
+
+        public static int Wfh_samplerate
+        {
+            get { return wfh_samplerate; }
+        }
+
         const int wfh_channels = 1;
+
+        public static int Wfh_channels
+        {
+            get { return wfh_channels; }
+        }
+
         const int wfh_bits = 16;
 
+        public static int Wfh_bits
+        {
+            get { return wfh_bits; }
+        }
+
+
         const int wfh_length = 44;
+
+        public static int Wfh_length
+        {
+            get { return wfh_length; }
+        } 
+
 
         public static void wfh_init(string filename)
         {

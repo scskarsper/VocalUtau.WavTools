@@ -6,7 +6,7 @@ using System.Text;
 
 namespace VocalUtau.WavTools
 {
-    class ArgsParser
+    public class ArgsParser
     {
         public static void printUsage()
         {
