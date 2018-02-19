@@ -80,6 +80,7 @@ namespace WavtoolSharp
             //Init
             WaveFormat outputFormat=new WaveFormat(44100, 1);
             FormatHelper fhelper = new FormatHelper(outputFormat);
+            MathHelper mhelper = new MathHelper();
 
             //IOInit
             WaveFileReader ifh=null;
@@ -142,11 +143,12 @@ namespace WavtoolSharp
                         SampleFrame = new float[1] { 0.0f };
                     }
                 }
-                float SampleMono = SampleFrame.Length == 1 ? SampleFrame[0] : fhelper.frameAverage(SampleFrame);
+                float SampleMono = SampleFrame.Length == 1 ? SampleFrame[0] : mhelper.floatAverage(SampleFrame);
                 if (SampleMono != 0)
                 {
                     //修复：切断音
-                    double percent = 100.0;// append_linear_volume(currentFrame, p_f, v_f);
+                    double percent = append_linear_volume(currentFrame, p_f, v_f);
+                    if (currentFrame < 20000) percent = 100;//DEUBG:确认问题：函数变换有错误
                     SampleMono = (float)(SampleMono * (percent / 100.0));
                 }
 

@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="NAudio.Extra\FormatHelper.cs" />
     <Compile Include="NAudio.Extra\IOHelper.cs" />
+    <Compile Include="NAudio.Extra\MathHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

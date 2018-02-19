@@ -38,15 +38,5 @@ namespace WavtoolSharp.NAudio.Extra
             }
             return ret;
         }
-        public float frameAverage(float[] frames)
-        {
-            if (frames.Length == 0) return 0;
-            double total = 0;
-            foreach (float f in frames)
-            {
-                total += f;
-            }
-            return (float)(total/frames.Length);
-        }
     }
 }
