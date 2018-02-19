@@ -14,11 +14,16 @@ namespace VocalUtau.WavTools.Model.Pipe
         string PipeName = "VocalUtau.WavTool";
         int Timeout = 500;
         MemoryStream bufferstream;
+        long OvrBufferSize = 0;
+        bool isFilled = false;
+        Semaphore semaphore;
         public Pipe_Client(string PipeName,int Timeout=500)
         {
             this.PipeName = PipeName;
             this.Timeout = Timeout;
             bufferstream = new MemoryStream();
+            isFilled = false;
+            semaphore = new Semaphore(1, 1, PipeName);
         }
         public void Renew()
         {
@@ -32,36 +37,108 @@ namespace VocalUtau.WavTools.Model.Pipe
                 bufferstream.Dispose();
             }
             catch { ;}
-            bufferstream = new MemoryStream();
+            bufferstream = new MemoryStream(); 
+            isFilled = false;
         }
-
+        public void LockWavFile()
+        {
+            Console.WriteLine("WaitSemaphore");
+            semaphore.WaitOne();
+            Console.WriteLine("GetSemaphore");
+        }
+        public void UnLockWavFile()
+        {
+            try
+            {
+                semaphore.Release();
+            }
+            catch { ;}
+            Console.WriteLine("ReleaseSemaphore");
+        }
 
         public void Append(string WavFileName, double offset, double length,
         double ovr, List<KeyValuePair<double, double>> KV)
         {
+            Console.WriteLine("Ask For Overlap time:{0}", ovr);
+            FillOvr(ovr);
+            Console.WriteLine("Wav Appending");
             WavFile_Datas.wfd_append(bufferstream, WavFileName, offset, length,
                 ovr, KV);
         }
         public void Append(Stream InputRiffStream, double offset, double length,
         double ovr, List<KeyValuePair<double, double>> KV)
         {
+            Console.WriteLine("Ask For Overlap time:{0}", ovr);
+            FillOvr(ovr);
+            Console.WriteLine("Wav Appending");
             WavFile_Datas.wfd_append(bufferstream, InputRiffStream, offset, length,
                 ovr, KV);
         }
-
-        public void Flush()
+        private void FillOvr(double ovr)
         {
-            SendBuffer();
-            Renew();
-        }
-        private void SendBuffer()
-        {
-            Semaphore semaphore = new Semaphore(1, 1, PipeName);
+            if (isFilled) return;
+            OvrBufferSize = WavFile_Datas.MsTime2BytesCount(ovr);
             using (NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName,
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough))
             {
-                semaphore.WaitOne();
+                try
+                {
+                    try
+                    {
+                        pipeStream.Connect(Timeout);
+                    }
+                    catch (TimeoutException)
+                    {
+                        Console.WriteLine("Timeout error!");
+                        return;
+                    }
+                    BinaryReader sr = new BinaryReader(pipeStream);
+                    BinaryWriter sw = new BinaryWriter(pipeStream);
+                    sw.Write((Int64)(-2));
+                    sw.Write(OvrBufferSize);
+                    sw.Flush();
+                    pipeStream.WaitForPipeDrain();
+                    Int64 Response=sr.ReadInt64();
+                    byte[] ResponByte = new byte[0];
+                    if (Response == -3)
+                    {
+                        Int64 OvrBS = sr.ReadInt64();
+                        if (OvrBS > 0)
+                        {
+                            ResponByte = new byte[OvrBS];
+                            sr.Read(ResponByte, 0, (int)OvrBS);
+                        }
+                    }
+                    try
+                    {
+                        sr.Close();
+                    }
+                    catch { ;}
+                    try
+                    {
+                        sw.Close();
+                    }
+                    catch { ;}
+                    bufferstream.Write(ResponByte, 0, ResponByte.Length);
+                    isFilled = true;
+                    Console.WriteLine("Asked OK! BufferSize:{0},TotalRecieve:{1}", OvrBufferSize,ResponByte.Length);
+                }
+                catch { ;}
+            }
+        }
+        public void Flush()
+        {
+            Console.WriteLine("Buffer Flushing");
+            SendBuffer(OvrBufferSize);
+            Renew();
+        }
+        private void SendBuffer(long OvrSize)
+        {
+            using (NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName,
+                    PipeDirection.InOut,
+                    PipeOptions.Asynchronous | PipeOptions.WriteThrough))
+            {
                 try
                 {
                     try
@@ -77,24 +154,24 @@ namespace VocalUtau.WavTools.Model.Pipe
                     BinaryWriter sw = new BinaryWriter(pipeStream);
                     byte[] byt = bufferstream.ToArray();
                     Int64 ByteLength = byt.Length;
+                    sw.Write((Int64)(-4));
+                    sw.Write(OvrSize);
                     sw.Write(ByteLength);
                     sw.Write(byt, 0, byt.Length);
                     sw.Flush();
                     sw.Close();
-                    Console.WriteLine("Sended OK! BufferSize:{0},TotalStream:{1}",ByteLength,ByteLength+8);
+                    Console.WriteLine("Sended OK! BufferSize:{0},TotalStream:{1}",ByteLength,ByteLength+4+8+8);
                 }
-                catch { semaphore.Release();}
+                catch {}
             }
         }
 
         public void SendEndSignal(Int64 SignalData=-1)
         {
-            Semaphore semaphore = new Semaphore(1, 1, PipeName);
             using (NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName,
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough))
             {
-                semaphore.WaitOne();
                 try
                 {
                     try
@@ -104,7 +181,6 @@ namespace VocalUtau.WavTools.Model.Pipe
                     catch (TimeoutException)
                     {
                         Console.WriteLine("Timeout error!");
-                        semaphore.Release();
                         return;
                     }
                     BinaryWriter sw = new BinaryWriter(pipeStream);
@@ -114,7 +190,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     sw.Close();
                     Console.WriteLine("Sended OK! End Signal,SignalCode:-1,Data:{0}",SignalData);
                 }
-                catch { semaphore.Release(); }
+                catch { ; }
             }
         }
         

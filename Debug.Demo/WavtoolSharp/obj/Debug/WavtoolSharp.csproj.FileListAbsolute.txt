@@ -1,0 +1,8 @@
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\bin\Debug\WavtoolSharp.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\bin\Debug\WavtoolSharp.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\bin\Debug\NAudio.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\bin\Debug\VocalUtau.WavTools.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\bin\Debug\VocalUtau.WavTools.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\obj\Debug\WavtoolSharp.csprojResolveAssemblyReference.cache
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\obj\Debug\WavtoolSharp.exe
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\Debug.Demo\WavtoolSharp\obj\Debug\WavtoolSharp.pdb

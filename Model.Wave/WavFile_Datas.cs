@@ -38,16 +38,19 @@ namespace VocalUtau.WavTools.Model.Wave
             stream.Seek(samples * wfh_channels * (wfh_bits / 8), SeekOrigin.Current);
         }
 
-        public static double wfd_append_linear_volume(int frame, int[] p, double[] v) {
-          double ret=0.0;
-          int i;
-          for (i=0; i<6; i++) {
-            if (p[i] <= frame && frame < p[i+1]) {
-              ret = v[i] + (v[i+1]-v[i]) * (((double)(frame-p[i])) / (((double)(p[i+1]-p[i]))));
-              break;
+        public static double wfd_append_linear_volume(int frame, int[] p, double[] v)
+        {
+            double ret = 0.0;
+            int i;
+            for (i = 0; i < 6; i++)
+            {
+                if (p[i] <= frame && frame < p[i + 1])
+                {
+                    ret = v[i] + (v[i + 1] - v[i]) * (((double)(frame - p[i])) / (((double)(p[i + 1] - p[i]))));
+                    break;
+                }
             }
-          }
-          return ret;
+            return ret;
         }
         public static Int16 wfd_mix(Int16 a, Int16 b)
         {
@@ -78,16 +81,16 @@ namespace VocalUtau.WavTools.Model.Wave
         public static int MsTime2BytesCount(double time)
         {
             if (time <= 0) return 0;
-            int ret=0;
-            int frames=wfd_ms2samples(time);
+            int ret = 0;
+            int frames = wfd_ms2samples(time);
             if (frames > 0)
             {
                 ret = wfh_channels * (wfh_bits / 8) * frames;
             }
             return ret;
         }
-        public static int wfd_append(string outputfilename,string inputfilename,double offset, double length,
-		double ovr, List<KeyValuePair<double, double>> KV)
+        public static int wfd_append(string outputfilename, string inputfilename, double offset, double length,
+        double ovr, List<KeyValuePair<double, double>> KV)
         {
             FileStream ofs = new FileStream(outputfilename, FileMode.OpenOrCreate);
             FileStream ifs = new FileStream(inputfilename, FileMode.Open);
@@ -96,21 +99,23 @@ namespace VocalUtau.WavTools.Model.Wave
             ofs.Close();
             return ret;
         }
-        
+
         public static int wfd_append(Stream OutputStream, string inputfilename, double offset, double length,
         double ovr, List<KeyValuePair<double, double>> KV)
         {
-            Stream ifs=null;
+            Stream ifs = null;
             try
             {
-                ifs = new FileStream(inputfilename, FileMode.Open,FileAccess.Read,FileShare.Read);
+                ifs = new FileStream(inputfilename, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
-            catch {
+            catch
+            {
                 ifs = new MemoryStream();
                 byte[] rfs = WavFile_Heads.Init_EmptyFile();
                 ifs.Write(rfs, 0, rfs.Length);
                 ifs.Position = 0;
-                ;}
+                ;
+            }
             int ret = wfd_append(OutputStream, ifs, offset, length, ovr, KV);
             ifs.Close();
             return ret;
@@ -132,7 +137,7 @@ namespace VocalUtau.WavTools.Model.Wave
             for (int i = KV.Count; i < 5; i++) { p.Add(0); v.Add(0); }
 
             OutputStream.Seek(0, SeekOrigin.End);//SeekToEnd
-            int outputFrames=wfd_ms2samples(length);
+            int outputFrames = wfd_ms2samples(length);
             int currentFrame = 0;
 
             Int16 sum;
@@ -141,7 +146,7 @@ namespace VocalUtau.WavTools.Model.Wave
             WaveFileReader wfr = new WaveFileReader(InputStream);
 
             /* handle offset */
-            if(wfd_ms2samples(offset)>0)
+            if (wfd_ms2samples(offset) > 0)
             {
                 Emu_Sf_Seek(wfr, wfd_ms2samples(offset), SeekOrigin.Begin);
             }
@@ -189,7 +194,7 @@ namespace VocalUtau.WavTools.Model.Wave
             if (ovrFrames > 0)
             {
                 int seekMap = wfh_channels * (wfh_bits / 8) * ovrFrames;
-                if (OutputStream.Length-wfh_length > seekMap)
+                if (OutputStream.Length - wfh_length > seekMap)
                 {
                     OutputStream.Seek((-1) * seekMap, SeekOrigin.End);
                 }
@@ -218,7 +223,7 @@ namespace VocalUtau.WavTools.Model.Wave
 
             /* output */
 
-            Int16[] Buf=new Int16[1]{0};
+            Int16[] Buf = new Int16[1] { 0 };
 
             currentFrame = 0;
             for (; outputFrames > 0; outputFrames--)
@@ -228,7 +233,7 @@ namespace VocalUtau.WavTools.Model.Wave
                     Buf = Emu_Sf_Readf_Short(wfr, 1);
                     if (Buf.Length < 1)
                     {
-                        Buf = new Int16[(int)(wfr.WaveFormat.BlockAlign/2)];
+                        Buf = new Int16[(int)(wfr.WaveFormat.BlockAlign / 2)];
                         for (int j = 0; j < (int)(wfr.WaveFormat.BlockAlign / 2); j++)
                         {
                             Buf[j] = 0;
@@ -262,7 +267,7 @@ namespace VocalUtau.WavTools.Model.Wave
                 {
                     Int16 d, r;
                     c1 = OutputStream.ReadByte();
-                    if (c1==-1)
+                    if (c1 == -1)
                     {
                         ovrFrames = 0;
                         goto wfd_append_normal;
@@ -302,7 +307,7 @@ namespace VocalUtau.WavTools.Model.Wave
             {
                 wfr.Close();
             }
-            long ret=OutputStream.Length;
+            long ret = OutputStream.Length;
             OutputStream.Close();
             return (int)ret;
         }
@@ -314,15 +319,15 @@ namespace VocalUtau.WavTools.Model.Wave
         {
             Int16[] ret = new Int16[frameNum];
             int step = (int)(wfr.WaveFormat.BlockAlign / 2);
-            for (int i = 0; i < frameNum; i=i+step)
+            for (int i = 0; i < frameNum; i = i + step)
             {
                 byte[] Buffer = new byte[wfr.WaveFormat.BlockAlign];
                 for (int j = 0; j < wfr.WaveFormat.BlockAlign; j++) Buffer[j] = 0;
                 wfr.Read(Buffer, 0, wfr.WaveFormat.BlockAlign);
                 for (int j = 0; j < step; j++)
                 {
-                    Int16 rt = (Int16)(Buffer[2*j+1] * 0x100 + Buffer[2*j+0]);
-                    ret[i+j] = rt;
+                    Int16 rt = (Int16)(Buffer[2 * j + 1] * 0x100 + Buffer[2 * j + 0]);
+                    ret[i + j] = rt;
                 }
             }
             return ret;

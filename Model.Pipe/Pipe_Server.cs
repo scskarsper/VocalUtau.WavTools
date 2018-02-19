@@ -17,7 +17,9 @@ namespace VocalUtau.WavTools.Model.Pipe
         string PipeName = "VocalUtau.WavTool";
         Stream bufferStream;
         BinaryWriter bufferWriter;
+        BinaryReader bufferReader;
         long bufferPosition = 0;
+        long bufferStartPosition = 0;
         bool Exit = false;
         NamedPipeServerStream pipeStream;
         IAsyncResult hand;
@@ -26,14 +28,18 @@ namespace VocalUtau.WavTools.Model.Pipe
         {
             bufferStream = new MemoryStream();
             bufferWriter = new BinaryWriter(bufferStream);
+            bufferReader = new BinaryReader(bufferStream);
             this.PipeName = PipeName;
             bufferPosition = 0;
+            this.bufferStartPosition = 0;
         }
         public Pipe_Server(string PipeName,Stream BaseStream,int bufferStartPosition=0)
         {
             bufferStream = BaseStream;
             bufferWriter = new BinaryWriter(bufferStream);
+            bufferReader = new BinaryReader(bufferStream);
             bufferPosition = bufferStartPosition;
+            this.bufferStartPosition = bufferStartPosition;
             this.PipeName = PipeName;
         }
 
@@ -42,7 +48,7 @@ namespace VocalUtau.WavTools.Model.Pipe
         {
             if (pipeStream != null)
             {
-                pipeStream.EndWaitForConnection(hand);
+                //pipeStream.EndWaitForConnection(hand);
                 try
                 {
                     pipeStream.Dispose();
@@ -64,41 +70,78 @@ namespace VocalUtau.WavTools.Model.Pipe
         private void WaitForConnectionAsyncCallback(IAsyncResult result)
         {
             long BufferSize = 0;
+            long OvrSize = 0;
             Console.WriteLine("Client connected.");
             NamedPipeServerStream pipeStream = (NamedPipeServerStream)result.AsyncState;
             pipeStream.EndWaitForConnection(result);
-            bool isEndSignal = false;
+            Int64 Signal = 0;
             Int64 SignalData = 0;
-            byte[] buf=new byte[0];
+            byte[] bufdat=new byte[0];
             using (BinaryReader sr = new BinaryReader(pipeStream))
             {
-                BufferSize=sr.ReadInt64();
-                if (BufferSize == -1)
+                Signal=sr.ReadInt64();
+                if (Signal == -1)
                 {
                     SignalData = sr.ReadInt64();
-                    isEndSignal = true;
                 }
-                else
+                else if (Signal == -2)
                 {
-                    buf = new byte[BufferSize];
-                    sr.Read(buf, 0, (int)BufferSize);
+                    OvrSize=sr.ReadInt64();
+                    long bufsiz=bufferPosition-bufferStartPosition;
+                    if (bufsiz < OvrSize)
+                    {
+                        using (BinaryWriter sw = new BinaryWriter(pipeStream))
+                        {
+                            sw.Write((Int64)(-3));//Sign:SendBack
+                            sw.Write((Int64)0);
+                        }
+                    }
+                    else
+                    {
+                        byte[] OvzBuf = new byte[OvrSize];
+                        bufferWriter.BaseStream.Position = bufferPosition - OvrSize;
+                        bufferReader.Read(OvzBuf, 0, (int)OvrSize);
+                        bufferPosition = bufferWriter.BaseStream.Position;
+                        using (BinaryWriter sw = new BinaryWriter(pipeStream))
+                        {
+                            sw.Write((Int64)(-3));//Sign:SendBack
+                            sw.Write((Int64)OvrSize);
+                            sw.Write(OvzBuf, 0, OvzBuf.Length);
+                        }
+                    }
+                }
+                else if(Signal == -4)
+                {
+                    OvrSize = sr.ReadInt64();
+                    BufferSize = sr.ReadInt64();
+                    bufdat = new byte[BufferSize];
+                    sr.Read(bufdat, 0, (int)BufferSize);
                 }
             }
             pipeStream.Dispose();
             hand = null ;
             StartServer();
-            if (isEndSignal)
+            if (Signal==-1)//ExitSignal
             {
                 if (RecieveEndSignal != null) RecieveEndSignal(SignalData);
             }
-            else
+            else if (Signal == -2)//OvrSignal
             {
-                bufferWriter.BaseStream.Position = bufferPosition;
-                bufferWriter.Write(buf, 0, buf.Length);
+            }else if(Signal==-4)//ResponseSingal
+            {
+                if (bufferPosition - OvrSize < bufferStartPosition)
+                {
+                    bufferWriter.BaseStream.Position = bufferPosition;
+                }
+                else
+                {
+                    bufferWriter.BaseStream.Position = bufferPosition - OvrSize;
+                }
+                bufferWriter.Write(bufdat, 0, bufdat.Length);
                 bufferWriter.Flush();
                 bufferWriter.Seek(0, SeekOrigin.Current);
                 bufferPosition = bufferWriter.BaseStream.Position;
-                if (RecievePipeStream != null) RecievePipeStream(BufferSize, buf);
+                if (RecievePipeStream != null) RecievePipeStream(BufferSize, bufdat);
             }
         }
 
@@ -113,6 +156,11 @@ namespace VocalUtau.WavTools.Model.Pipe
             try
             {
                 bufferWriter.Dispose();
+            }
+            catch { ;}
+            try
+            {
+                bufferReader.Dispose();
             }
             catch { ;}
             try

@@ -14,7 +14,9 @@ namespace VocalUtau.Wavtools.Client
         {
             Console.WriteLine("---- Work As Pipe ----");
             Pipe_Client pclient = new Pipe_Client("VocalUtau.WavTool.PPC", 2000);
+            pclient.LockWavFile();
             pclient.SendEndSignal(-1);
+            pclient.UnLockWavFile();
             pclient.Dispose();
         }
         static void Main(string[] args)
@@ -33,9 +35,11 @@ namespace VocalUtau.Wavtools.Client
             }
             ArgsParser.printArgs(p);
             Console.WriteLine("---- Work As Pipe ----");
-            Pipe_Client pclient = new Pipe_Client("VocalUtau.WavTool.PPC",2000);
+            Pipe_Client pclient = new Pipe_Client("VocalUtau.WavTool.PPC", 2000);
+            pclient.LockWavFile();
             pclient.Append(p.Inputfilename, p.Offset, p.Length, p.Ovr, p.PV);
             pclient.Flush();
+            pclient.UnLockWavFile();
             pclient.Dispose();
         }
     }
