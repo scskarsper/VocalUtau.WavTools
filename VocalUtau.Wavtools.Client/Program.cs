@@ -21,16 +21,17 @@ namespace VocalUtau.Wavtools.Client
         }
         static void Main(string[] args)
         {
-            if (args.Length>0 && args[0].ToLower() == "-e")
-            {
-                SendEnd();
-                return;
-            }
-            ArgsStruct p = ArgsParser.parseArgs(args);
+            ArgsStruct p = ArgsParser.parseArgs(args,false);
             if (p == null)
             {
                 ArgsParser.printUsage();
-                Console.WriteLine("\nIf you want to send a End Signal to tell server all is finished,Command:\nwavtool.net -e");
+                Console.WriteLine("Commands:");
+                Console.WriteLine("\t--command-flush\tSend a End Signal to tell server all is finished");
+                return;
+            }
+            if (p.Commands.Contains("flush"))
+            {
+                SendEnd();
                 return;
             }
             ArgsParser.printArgs(p);

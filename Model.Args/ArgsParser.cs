@@ -10,8 +10,17 @@ namespace VocalUtau.WavTools.Model.Args
     {
         public static void printUsage()
         {
-            Console.WriteLine("wavtool.net <outfile> <infile> offset length");
-            Console.WriteLine("             p1 p2 p3 v1 v2 v3 v4 ovr p4 p5 v4 v5");
+            Console.WriteLine("wavtoolSharp.exe [Options/Commands] <outfile> <infile> offset length");
+            Console.WriteLine("             p1 p2 p3 v1 v2 v3 v4 overlap [p4] [p5] [v4] [v5]");
+            Console.WriteLine("             [p6] [v6] [p7] [v7] [p8] [v8] ... ");
+        }
+        public static void printExtendUsage()
+        {
+            Console.WriteLine("OptionsFormat:  --options-<optionName>:<optionName>");
+            Console.WriteLine("             Forexample: --options-pipeName:10086");
+            Console.WriteLine("CommandsFormat: --command-<commandName>");
+            Console.WriteLine("             Forexample: --command-exit");
+            Console.WriteLine("             Special:The Options or Commands must before <outfile>,CaseSensitive.");
         }
 
         public static double parseLength(string lenstr)
@@ -68,7 +77,44 @@ namespace VocalUtau.WavTools.Model.Args
             return ret;
         }
 
-        public static ArgsStruct parseArgs(string[] args)
+        public static ArgsStruct parseArgs(string[] args, bool OptionOrCommandCaseSensitive=true)
+        {
+            Dictionary<string, string> Options = new Dictionary<string, string>(); 
+            List<string> Commands = new List<string>();
+            List<string> argList = new List<string>();
+            argList.AddRange(args);
+            if (argList.Count == 0) return null;
+            while (argList.Count > 0 && (argList[0].Length > 10 && (argList[0].Substring(0, 10).ToLower() == "--options-" || argList[0].Substring(0, 10).ToLower() == "--command-")))
+            {
+                string ostr = argList[0];
+                argList.RemoveAt(0);
+                string tyr = ostr.Substring(0, 10).ToLower();
+                ostr = ostr.Substring(10);
+                if (tyr == "--options-")
+                {
+                    int spt = ostr.IndexOf(":");
+                    string k = ostr;
+                    string v = "true";
+                    if (spt > 0)
+                    {
+                        k = ostr.Substring(0, spt);
+                        v = ostr.Substring(spt + 1);
+                    }
+                    if (!OptionOrCommandCaseSensitive) k=k.ToLower();
+                    if (!Options.ContainsKey(k)) Options.Add(k, v);
+                }
+                else if (tyr == "--command-")
+                {
+                    if (!OptionOrCommandCaseSensitive) ostr = ostr.ToLower();
+                    Commands.Add(ostr);
+                }
+            }
+            ArgsStruct ret=parseArgs_wavtool(argList.ToArray());
+            ret.Options=Options;
+            ret.Commands = Commands;
+            return ret;
+        }
+        private static ArgsStruct parseArgs_wavtool(string[] args)
         {
             /*
             Console.WriteLine("wavtool.net <outfile> <infile> offset length");
@@ -119,6 +165,12 @@ namespace VocalUtau.WavTools.Model.Args
                 ret.PV.Add(new KeyValuePair<double, double>(Conversion.Val(args[13]), Conversion.Val(args[14])));//p3,v3
             }
             else return ret;
+            int aft = 2;
+            while (args.Length > 14 + aft)
+            {
+                ret.PV.Add(new KeyValuePair<double, double>(Conversion.Val(args[14+aft-1]), Conversion.Val(args[14+aft])));//p3,v3
+                aft += 2;
+            }
             return ret;
         }
 
@@ -127,12 +179,37 @@ namespace VocalUtau.WavTools.Model.Args
             Console.WriteLine("Input: {0}", p.Inputfilename);
             Console.WriteLine("Offset: {0}", p.Offset);
             Console.WriteLine("Length: {0}, Ovr: {1}", p.Length,p.Ovr);
-            int d=5;
+            int d=1;
+            //PS+CP[0]+CP[1]+CP[4]... -- CP[2]+CP[3]+PE;
             foreach (KeyValuePair<double, double> kv in p.PV)
             {
-                Console.WriteLine("p: {0}, v: {1}", kv.Key,kv.Value);
-                d--;
-                if (d == 0) break;
+                string SeekStr = "Format:";
+                if (d == 1)
+                {
+                    SeekStr = @"Point" + d.ToString() + ".X:{START}+" + kv.Key.ToString();
+                }
+                else if (d == 2)
+                {
+                    SeekStr = @"Point" + d.ToString() + ".X:{Point1.X}+" + kv.Key.ToString();
+                }
+                else if (d == 3)
+                {
+                    SeekStr = @"Point" + d.ToString() + ".X:{Point4.X}-" + kv.Key.ToString();
+                }
+                else if (d == 4)
+                {
+                    SeekStr = @"Point"+d.ToString()+".X:{END}-" + kv.Key.ToString();
+                }
+                else if (d == 5)
+                {
+                    SeekStr = @"Point" + d.ToString() + ".X:{Point2.X}+" + kv.Key.ToString();
+                }
+                else
+                {
+                    SeekStr = @"Point" + d.ToString() + ".X:{Point"+(d-1).ToString()+".X}+" + kv.Key.ToString();
+                }
+                Console.WriteLine("EnvPoint{0}: ({1},{2})\t{3}",d, kv.Key,kv.Value,SeekStr);
+                d++;
             }
         }
     }

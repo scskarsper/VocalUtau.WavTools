@@ -48,7 +48,6 @@ namespace VocalUtau.WavTools.Model.Pipe
         {
             if (pipeStream != null)
             {
-                //pipeStream.EndWaitForConnection(hand);
                 try
                 {
                     pipeStream.Dispose();
@@ -73,76 +72,81 @@ namespace VocalUtau.WavTools.Model.Pipe
             long OvrSize = 0;
             Console.WriteLine("Client connected.");
             NamedPipeServerStream pipeStream = (NamedPipeServerStream)result.AsyncState;
-            pipeStream.EndWaitForConnection(result);
-            Int64 Signal = 0;
-            Int64 SignalData = 0;
-            byte[] bufdat=new byte[0];
-            using (BinaryReader sr = new BinaryReader(pipeStream))
+            try
             {
-                Signal=sr.ReadInt64();
-                if (Signal == -1)
+                pipeStream.EndWaitForConnection(result);
+                Int64 Signal = 0;
+                Int64 SignalData = 0;
+                byte[] bufdat = new byte[0];
+                using (BinaryReader sr = new BinaryReader(pipeStream))
                 {
-                    SignalData = sr.ReadInt64();
-                }
-                else if (Signal == -2)
-                {
-                    OvrSize=sr.ReadInt64();
-                    long bufsiz=bufferPosition-bufferStartPosition;
-                    if (bufsiz < OvrSize)
+                    Signal = sr.ReadInt64();
+                    if (Signal == -1)
                     {
-                        using (BinaryWriter sw = new BinaryWriter(pipeStream))
+                        SignalData = sr.ReadInt64();
+                    }
+                    else if (Signal == -2)
+                    {
+                        OvrSize = sr.ReadInt64();
+                        long bufsiz = bufferPosition - bufferStartPosition;
+                        if (bufsiz < OvrSize)
                         {
-                            sw.Write((Int64)(-3));//Sign:SendBack
-                            sw.Write((Int64)0);
+                            using (BinaryWriter sw = new BinaryWriter(pipeStream))
+                            {
+                                sw.Write((Int64)(-3));//Sign:SendBack
+                                sw.Write((Int64)0);
+                            }
                         }
+                        else
+                        {
+                            byte[] OvzBuf = new byte[OvrSize];
+                            bufferWriter.BaseStream.Position = bufferPosition - OvrSize;
+                            bufferReader.Read(OvzBuf, 0, (int)OvrSize);
+                            bufferPosition = bufferWriter.BaseStream.Position;
+                            using (BinaryWriter sw = new BinaryWriter(pipeStream))
+                            {
+                                sw.Write((Int64)(-3));//Sign:SendBack
+                                sw.Write((Int64)OvrSize);
+                                sw.Write(OvzBuf, 0, OvzBuf.Length);
+                            }
+                        }
+                    }
+                    else if (Signal == -4)
+                    {
+                        OvrSize = sr.ReadInt64();
+                        BufferSize = sr.ReadInt64();
+                        bufdat = new byte[BufferSize];
+                        sr.Read(bufdat, 0, (int)BufferSize);
+                    }
+                }
+                pipeStream.Dispose();
+                hand = null;
+                StartServer();
+                if (Signal == -1)//ExitSignal
+                {
+                    if (RecieveEndSignal != null) RecieveEndSignal(SignalData);
+                }
+                else if (Signal == -2)//OvrSignal
+                {
+                }
+                else if (Signal == -4)//ResponseSingal
+                {
+                    if (bufferPosition - OvrSize < bufferStartPosition)
+                    {
+                        bufferWriter.BaseStream.Position = bufferPosition;
                     }
                     else
                     {
-                        byte[] OvzBuf = new byte[OvrSize];
                         bufferWriter.BaseStream.Position = bufferPosition - OvrSize;
-                        bufferReader.Read(OvzBuf, 0, (int)OvrSize);
-                        bufferPosition = bufferWriter.BaseStream.Position;
-                        using (BinaryWriter sw = new BinaryWriter(pipeStream))
-                        {
-                            sw.Write((Int64)(-3));//Sign:SendBack
-                            sw.Write((Int64)OvrSize);
-                            sw.Write(OvzBuf, 0, OvzBuf.Length);
-                        }
                     }
-                }
-                else if(Signal == -4)
-                {
-                    OvrSize = sr.ReadInt64();
-                    BufferSize = sr.ReadInt64();
-                    bufdat = new byte[BufferSize];
-                    sr.Read(bufdat, 0, (int)BufferSize);
+                    bufferWriter.Write(bufdat, 0, bufdat.Length);
+                    bufferWriter.Flush();
+                    bufferWriter.Seek(0, SeekOrigin.Current);
+                    bufferPosition = bufferWriter.BaseStream.Position;
+                    if (RecievePipeStream != null) RecievePipeStream(BufferSize, bufdat);
                 }
             }
-            pipeStream.Dispose();
-            hand = null ;
-            StartServer();
-            if (Signal==-1)//ExitSignal
-            {
-                if (RecieveEndSignal != null) RecieveEndSignal(SignalData);
-            }
-            else if (Signal == -2)//OvrSignal
-            {
-            }else if(Signal==-4)//ResponseSingal
-            {
-                if (bufferPosition - OvrSize < bufferStartPosition)
-                {
-                    bufferWriter.BaseStream.Position = bufferPosition;
-                }
-                else
-                {
-                    bufferWriter.BaseStream.Position = bufferPosition - OvrSize;
-                }
-                bufferWriter.Write(bufdat, 0, bufdat.Length);
-                bufferWriter.Flush();
-                bufferWriter.Seek(0, SeekOrigin.Current);
-                bufferPosition = bufferWriter.BaseStream.Position;
-                if (RecievePipeStream != null) RecievePipeStream(BufferSize, bufdat);
-            }
+            catch { ;}
         }
 
         public void Dispose()

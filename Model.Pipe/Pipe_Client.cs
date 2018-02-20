@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using VocalUtau.WavTools.Model.Wave;
+using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.WavTools.Model.Pipe
 {
@@ -62,7 +63,7 @@ namespace VocalUtau.WavTools.Model.Pipe
             Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
             Console.WriteLine("Wav Appending");
-            WavFile_Datas.wfd_append(bufferstream, WavFileName, offset, length,
+            WavAppender.AppendWork(bufferstream, WavFileName, offset, length,
                 ovr, KV);
         }
         public void Append(Stream InputRiffStream, double offset, double length,
@@ -71,13 +72,14 @@ namespace VocalUtau.WavTools.Model.Pipe
             Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
             Console.WriteLine("Wav Appending");
-            WavFile_Datas.wfd_append(bufferstream, InputRiffStream, offset, length,
+            WavAppender.AppendWork(bufferstream, InputRiffStream, offset, length,
                 ovr, KV);
         }
         private void FillOvr(double ovr)
         {
             if (isFilled) return;
-            OvrBufferSize = WavFile_Datas.MsTime2BytesCount(ovr);
+            FormatHelper fhelper = new FormatHelper(IOHelper.NormalPcmMono16_Format);
+            OvrBufferSize = fhelper.Ms2Bytes(ovr);
             using (NamedPipeClientStream pipeStream = new NamedPipeClientStream(".", PipeName,
                     PipeDirection.InOut,
                     PipeOptions.Asynchronous | PipeOptions.WriteThrough))

@@ -23,20 +23,20 @@ namespace VocalUtau.WavTools.Model.Player
         Stream buffer; 
         WaveOut waveOut;
         BufferedWaveProvider bufferedWaveProvider = null;
-        bool buffHavehead = false;
+        long headLengthInBuffer = 0;
         long bufferPosition = 0;
         long Untall = 1024;
-        public BufferedPlayer(Stream InputStream,bool haveWavHead=false)
+        public BufferedPlayer(Stream InputStream,long HeadLengthInBuffer=0)
         {
             buffer = InputStream;
             _playbackState = NAudio.Wave.PlaybackState.Stopped;
-            buffHavehead = haveWavHead;
+            headLengthInBuffer = HeadLengthInBuffer;
             bufferPosition = 0;
         }
         public void InitPlayer()
         {
             waveOut = new WaveOut();
-            bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(WavFile_Heads.Wfh_samplerate,WavFile_Heads.Wfh_channels));
+            bufferedWaveProvider = new BufferedWaveProvider(new WaveFormat(44100,1));
             waveOut.Init(bufferedWaveProvider);
             _playbackState = NAudio.Wave.PlaybackState.Stopped;
             if (Inited != null) Inited(this);
@@ -63,17 +63,17 @@ namespace VocalUtau.WavTools.Model.Player
             }
             Untall = UnreadableTall;
             long offset = UnreadableTall;
-            if (buffHavehead)
+            if (headLengthInBuffer>0)
             {
-                if (bufferPosition < WavFile_Heads.Wfh_length)
+                if (bufferPosition < headLengthInBuffer)
                 {
-                    if (buffer.Length > WavFile_Heads.Wfh_length)
+                    if (buffer.Length > headLengthInBuffer)
                     {
-                        buffer.Seek(WavFile_Heads.Wfh_length, SeekOrigin.Begin);
-                        bufferPosition = WavFile_Heads.Wfh_length;
+                        buffer.Seek(headLengthInBuffer, SeekOrigin.Begin);
+                        bufferPosition = headLengthInBuffer;
                     }
                 }
-                offset = offset + WavFile_Heads.Wfh_length;
+                offset = offset + headLengthInBuffer;
             }
             while (buffer.Length - offset > bufferPosition)
             {

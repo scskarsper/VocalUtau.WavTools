@@ -1,4 +1,0 @@
-D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Demo.Client\bin\Debug\VocalUtau.Wavtools.Demo.Client.exe
-D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Demo.Client\bin\Debug\VocalUtau.Wavtools.Demo.Client.pdb
-D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Demo.Client\obj\Debug\VocalUtau.Wavtools.Demo.Client.exe
-D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Demo.Client\obj\Debug\VocalUtau.Wavtools.Demo.Client.pdb

@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>"D:\nanana.wav" "D:\VocalUtau\IncludeLib\UTAUMixer\DemoUSTS\Sakurane2.Tracks\Track-4b158252-eb7f-4223-b7b0-d78f32e044ec.cache\9_傕_B3_Ws191M.wav" 0 480%40180+126.0 0 5 35 0 100 100 0</StartArguments>
-  </PropertyGroup>
-</Project>

@@ -12,6 +12,9 @@ namespace VocalUtau.WavTools.Model.Args
             _pv = new List<KeyValuePair<double, double>>();
         }
 
+        public Dictionary<string, string> Options = new Dictionary<string, string>();
+        public List<string> Commands = new List<string>();
+
         double _offset;
 
         public double Offset
