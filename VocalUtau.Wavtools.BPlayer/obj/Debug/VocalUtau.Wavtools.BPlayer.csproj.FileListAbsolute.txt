@@ -19,3 +19,4 @@ D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.BPlayer\obj\Debug\
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.Properties.Resources.resources
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.BPlayer\obj\Debug\VocalUtau.Wavtools.BPlayer.csproj.GenerateResource.Cache
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.BPlayer\bin\Debug\VocalUtau.WavTools.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.BPlayer\bin\Debug\NAudio.dll

@@ -11,6 +11,6 @@
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <StartArguments>--command-Flush "D:\nanana.wav" "D:\Console-DebugWavToo\UAtau\voice\lb\wa.wav" 0 600%40120+19.844 0 5 35 0 50 100 0 31</StartArguments>
+    <StartArguments>--options-cropTime:100 "D:\nanana.wav" "D:\VocalUtau\IncludeLib\UTAUMixer\DemoUSTS\Sakurane2.Tracks\Track-4b158252-eb7f-4223-b7b0-d78f32e044ec.cache\8_偍_A3_tQm2V8.wav" 0 600%40120+19.844 0 5 35 0 50 100 0 31</StartArguments>
   </PropertyGroup>
 </Project>

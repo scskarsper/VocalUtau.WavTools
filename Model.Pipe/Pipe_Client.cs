@@ -58,22 +58,22 @@ namespace VocalUtau.WavTools.Model.Pipe
         }
 
         public void Append(string WavFileName, double offset, double length,
-        double ovr, List<KeyValuePair<double, double>> KV)
+        double ovr, List<KeyValuePair<double, double>> KV, double DropTime = 0)
         {
             Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
             Console.WriteLine("Wav Appending");
             WavAppender.AppendWork(bufferstream, WavFileName, offset, length,
-                ovr, KV);
+                ovr, KV,DropTime);
         }
         public void Append(Stream InputRiffStream, double offset, double length,
-        double ovr, List<KeyValuePair<double, double>> KV)
+        double ovr, List<KeyValuePair<double, double>> KV,double DropTime=0)
         {
             Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
             Console.WriteLine("Wav Appending");
             WavAppender.AppendWork(bufferstream, InputRiffStream, offset, length,
-                ovr, KV);
+                ovr, KV,DropTime);
         }
         private void FillOvr(double ovr)
         {

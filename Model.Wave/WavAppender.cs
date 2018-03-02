@@ -11,23 +11,25 @@ namespace VocalUtau.WavTools.Model.Wave
     public class WavAppender
     {
         public static void AppendWork(Stream OutputStream, string InputFilename, double offset, double length,
-        double ovr, List<KeyValuePair<double, double>> KV, uint HeadLength = 0)
+        double ovr, List<KeyValuePair<double, double>> KV, double DropTime, uint HeadLength = 0)
         {
             FileStream fs = null;
             if (System.IO.File.Exists(InputFilename))
             {
                 fs=new FileStream(InputFilename, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
-            AppendWork(OutputStream, fs, offset, length, ovr, KV, HeadLength);
+            AppendWork(OutputStream, fs, offset, length, ovr, KV, DropTime, HeadLength);
             if(fs!=null)fs.Close();
         }
         public static void AppendWork(Stream OutputStream, Stream InputStream, double offset, double length,
-        double ovr, List<KeyValuePair<double, double>> KV,uint HeadLength=0)
+        double ovr, List<KeyValuePair<double, double>> KV,double droptime,uint HeadLength=0)
         {
+
             //Init
             WaveFormat outputFormat = new WaveFormat(44100, 1);
             FormatHelper fhelper = new FormatHelper(outputFormat);
             MathHelper mhelper = new MathHelper();
+
 
             //IOInit
             WaveFileReader ifh = null;
@@ -40,8 +42,18 @@ namespace VocalUtau.WavTools.Model.Wave
             int outputFrames = fhelper.Ms2Samples(length);
             int overlapFrames = fhelper.Ms2Samples(ovr);
             int offsetFrames = fhelper.Ms2Samples(offset);
-            //int totalFrames = ifh != null ? Math.Max(outputFrames, ((int)ifh.SampleCount)) : outputFrames;
             List<MathHelper.SegmentLine> EnvlopeLines = fhelper.KV2SegmentLines(outputFrames, KV);
+
+            //CheckDelay
+            int dropFrames = fhelper.Ms2Samples(droptime);
+            if (dropFrames < 0) dropFrames = 0;
+            if (dropFrames > 0)
+            {
+                if (dropFrames > outputFrames - overlapFrames)
+                {
+                    return;
+                }
+            }
 
             //SeekInput
             if (ifh != null)
@@ -69,7 +81,13 @@ namespace VocalUtau.WavTools.Model.Wave
                 OutputStream.Seek(0, SeekOrigin.End);
                 for (int i = 0; i < -overlapFrames; i++)
                 {
-                    ofh.WriteSample(0.0f);
+                    if (dropFrames > 0)
+                    {
+                        dropFrames--;
+                    }else
+                    {
+                        ofh.WriteSample(0.0f);
+                    }
                 }
                 overlapFrames = 0;
             }
@@ -107,17 +125,39 @@ namespace VocalUtau.WavTools.Model.Wave
                         overlapFrames--;
                         float a2 = fhelper.FramesMix(SampleMono, oldFrame);
                         float SampleMix = a2;
-                        ofh.WriteSample(SampleMix);
+                        if (dropFrames > 0)
+                        {
+                            ofh.WriteSample(oldFrame);//放弃Seek
+                            dropFrames--;
+                        }
+                        else
+                        {
+                            ofh.WriteSample(SampleMix);
+                        }
                     }
                     else
                     {
-                        ofh.WriteSample(SampleMono);
+                        if (dropFrames > 0)
+                        {
+                            dropFrames--;
+                        }
+                        else
+                        {
+                            ofh.WriteSample(SampleMono);
+                        }
                         overlapFrames = 0;
                     }
                 }
                 else
                 {
-                    ofh.WriteSample(SampleMono);
+                    if (dropFrames > 0)
+                    {
+                        dropFrames--;
+                    }
+                    else
+                    {
+                        ofh.WriteSample(SampleMono);
+                    }
                 }
             }
         }

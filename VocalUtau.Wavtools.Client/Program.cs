@@ -25,6 +25,8 @@ namespace VocalUtau.Wavtools.Client
             if (p == null)
             {
                 ArgsParser.printUsage();
+                Console.WriteLine("Options: ");
+                Console.WriteLine("\t--options-cropTime:<timedelay>\tto drop <timedelay> data before wavfile");
                 Console.WriteLine("Commands:");
                 Console.WriteLine("\t--command-flush\tSend a End Signal to tell server all is finished");
                 return;
@@ -38,7 +40,9 @@ namespace VocalUtau.Wavtools.Client
             Console.WriteLine("---- Work As Pipe ----");
             Pipe_Client pclient = new Pipe_Client("VocalUtau.WavTool.PPC", 2000);
             pclient.LockWavFile();
-            pclient.Append(p.Inputfilename, p.Offset, p.Length, p.Ovr, p.PV);
+            double delay = 0;
+            if (p.Options.ContainsKey("croptime")) double.TryParse(p.Options["croptime"], out delay);
+            pclient.Append(p.Inputfilename, p.Offset, p.Length, p.Ovr, p.PV,delay);
             pclient.Flush();
             pclient.UnLockWavFile();
             pclient.Dispose();

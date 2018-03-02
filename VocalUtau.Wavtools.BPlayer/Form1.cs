@@ -22,6 +22,7 @@ namespace VocalUtau.Wavtools.BPlayer
         BufferedPlayer bplayer;
         long headSize = 0;
         double prebufftime = 1000;
+        double delaybufftime = 3000;
         public Form1()
         {
             InitializeComponent();
@@ -41,7 +42,8 @@ namespace VocalUtau.Wavtools.BPlayer
         }
         private void InitPlayer(long headSize)
         {
-            bplayer = new BufferedPlayer(Fs, headSize);
+            FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
+            bplayer = new BufferedPlayer(Fs, headSize+(long)fh.Ms2Bytes(delaybufftime));
             bplayer.InitPlayer();
             bplayer.Buffer_Play();
         }
@@ -55,6 +57,8 @@ namespace VocalUtau.Wavtools.BPlayer
             pserver.StartServer(); 
             prebufftime = 1000;
             pserver.RecieveEndSignal += pserver_RecieveEndSignal;
+            button1.Enabled = false;
+            button2.Enabled = true;
         }
 
         void pserver_RecieveEndSignal(long SignalData)
@@ -72,6 +76,11 @@ namespace VocalUtau.Wavtools.BPlayer
             Fs.Write(head, 0, head.Length);
             Fs.Close();
             pserver.ExitServer();
+            button2.Enabled = false;
+            button1.Enabled = true;
+            progressBar1.Value = 0;
+            progressBar2.Value = 0;
+            progressBar3.Value = 0;
         }
 
         private void timer1_Tick(object sender, EventArgs e)
