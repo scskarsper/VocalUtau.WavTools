@@ -22,7 +22,7 @@ namespace VocalUtau.Wavtools.BPlayer
         BufferedPlayer bplayer;
         long headSize = 0;
         double prebufftime = 1000;
-        double delaybufftime = 3000;
+        double delaybufftime = 0;//3000;
         public Form1()
         {
             InitializeComponent();
