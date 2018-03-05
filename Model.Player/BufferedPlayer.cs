@@ -8,7 +8,7 @@ using VocalUtau.WavTools.Model.Wave;
 
 namespace VocalUtau.WavTools.Model.Player
 {
-    public class BufferedPlayer
+    public class BufferedPlayer : MarshalByRefObject
     {
         public delegate void BufferEventHandler(object sender);
         public event BufferEventHandler Inited;

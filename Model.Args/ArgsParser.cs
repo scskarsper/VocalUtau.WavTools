@@ -6,7 +6,7 @@ using System.Text;
 
 namespace VocalUtau.WavTools.Model.Args
 {
-    public class ArgsParser
+    public class ArgsParser : MarshalByRefObject
     {
         public static void printUsage()
         {

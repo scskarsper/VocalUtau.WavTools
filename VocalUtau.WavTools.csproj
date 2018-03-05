@@ -51,6 +51,7 @@
     <Compile Include="Model.Args\ArgsParser.cs" />
     <Compile Include="Model.Args\ArgsStruct.cs" />
     <Compile Include="Model.Executable\Exe_Main.cs" />
+    <Compile Include="AppWrapper.cs" />
     <Compile Include="Model.Pipe\Pipe_Server.cs" />
     <Compile Include="Model.Player\BufferedPlayer.cs" />
     <Compile Include="Model.Pipe\Pipe_Client.cs" />

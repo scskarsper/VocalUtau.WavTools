@@ -8,7 +8,7 @@ using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.WavTools.Model.Wave
 {
-    public class WavAppender
+    public class WavAppender : MarshalByRefObject
     {
         public static void AppendWork(Stream OutputStream, string InputFilename, double offset, double length,
         double ovr, List<KeyValuePair<double, double>> KV, double DropTime, uint HeadLength = 0)

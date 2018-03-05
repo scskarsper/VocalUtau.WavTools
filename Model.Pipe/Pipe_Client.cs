@@ -10,7 +10,7 @@ using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.WavTools.Model.Pipe
 {
-    public class Pipe_Client
+    public class Pipe_Client : MarshalByRefObject
     {
         string PipeName = "VocalUtau.WavTool";
         int Timeout = 500;

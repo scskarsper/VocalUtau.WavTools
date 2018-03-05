@@ -7,7 +7,7 @@ using System.Text;
 
 namespace VocalUtau.WavTools.Model.Pipe
 {
-    public class Pipe_Server
+    public class Pipe_Server : MarshalByRefObject
     {
         public delegate void RecievePipeStreamHandler(long BufferLength,byte[] BufferData);
         public event RecievePipeStreamHandler RecievePipeStream;
