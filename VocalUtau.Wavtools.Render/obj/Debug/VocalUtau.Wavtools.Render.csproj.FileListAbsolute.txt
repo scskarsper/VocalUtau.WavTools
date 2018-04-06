@@ -21,3 +21,5 @@ D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\D
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\VocalUtau.DirectUI.pdb
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\BalthasarLib.D2DPainter.pdb
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\obj\Debug\VocalUtau.Wavtools.Render.csprojResolveAssemblyReference.cache
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\VocalUtau.WavTools.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\VocalUtau.WavTools.pdb

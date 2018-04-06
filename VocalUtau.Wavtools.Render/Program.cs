@@ -9,14 +9,18 @@ namespace VocalUtau.Wavtools.Render
     {
         static void Main(string[] args)
         {
+            CachePlayer Cplayer = new CachePlayer();
+            List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList = new List<Calculators.NoteListCalculator.NotePreRender>();
             using (System.IO.FileStream ms = new System.IO.FileStream(@"D:\\temp.binary", System.IO.FileMode.Open))
             {
                 //序列化操作，把内存中的东西写到硬盘中
                 System.Runtime.Serialization.Formatters.Binary.BinaryFormatter fomatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter(null, new System.Runtime.Serialization.StreamingContext(System.Runtime.Serialization.StreamingContextStates.File));
                 object obj=fomatter.Deserialize(ms);
-//                fomatter.Serialize(ms, rst2[0]);
                 ms.Flush();
+                NList = (List<VocalUtau.Calculators.NoteListCalculator.NotePreRender>)obj;
             }
+            Cplayer.Play();
+            Cplayer.StartRending(NList);
         }
     }
 }
