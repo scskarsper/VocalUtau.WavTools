@@ -55,6 +55,7 @@
     <Compile Include="Model.Pipe\Pipe_Server.cs" />
     <Compile Include="Model.Player\BufferedPlayer.cs" />
     <Compile Include="Model.Pipe\Pipe_Client.cs" />
+    <Compile Include="Model.Wave\FileStreamIO.cs" />
     <Compile Include="Model.Wave\NAudio.Extra\FormatHelper.cs" />
     <Compile Include="Model.Wave\NAudio.Extra\IOHelper.cs" />
     <Compile Include="Model.Wave\NAudio.Extra\MathHelper.cs" />

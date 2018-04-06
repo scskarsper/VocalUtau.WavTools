@@ -239,7 +239,7 @@ namespace VocalUtau.WavTools.Model.Wave.NAudio.Extra
         }
         public static byte[] GenerateHead(int FileLengthWithoutHead = -1)
         {
-            return GenerateHead(NormalPcmMono16_Format);
+            return GenerateHead(NormalPcmMono16_Format,FileLengthWithoutHead);
         }
         public static byte[] GenerateHead(WaveFormat format,int FileLengthWithoutHead=-1)
         {
@@ -260,6 +260,7 @@ namespace VocalUtau.WavTools.Model.Wave.NAudio.Extra
 
             writer.Seek((int)HeadSize-4, SeekOrigin.Begin);
             writer.Write((UInt32)FileLengthWithoutHead);
+            writer.Flush();
             byte[] ret = ms.ToArray();
             ms.Dispose();
             return ret;

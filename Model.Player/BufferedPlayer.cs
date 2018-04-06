@@ -78,9 +78,11 @@ namespace VocalUtau.WavTools.Model.Player
             while (buffer.Length - offset > bufferPosition)
             {
                 byte[] buf = new byte[1024];
-                buffer.Seek(bufferPosition, SeekOrigin.Begin);
-                int len = buffer.Read(buf, 0, buf.Length);
-                bufferPosition = buffer.Position;
+                //buffer.Seek(bufferPosition, SeekOrigin.Begin);
+                int len = FileStreamIO.StreamRead(buffer, bufferPosition, ref buf);//= buffer.Read(buf, 0, buf.Length);
+                if (len <= 0) 
+                    break;
+                bufferPosition += len;// buffer.Position;
                 bufferedWaveProvider.AddSamples(buf, 0, len);
                 if (BufferReady)
                 {

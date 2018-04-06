@@ -21,6 +21,7 @@ namespace VocalUtau.Wavtools.Render
             }
             Cplayer.Play();
             Cplayer.StartRending(NList);
+            Console.ReadLine();
         }
     }
 }
