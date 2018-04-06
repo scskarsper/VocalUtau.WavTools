@@ -58,7 +58,7 @@ namespace VocalUtau.Wavtools.BPlayer
             pserver = new Pipe_Server("VocalUtau.WavTool.PPC", Fs, (int)headSize);
             pserver.StartServer(); 
             prebufftime = 1000;
-            pserver.RecieveEndSignal += pserver_RecieveEndSignal;
+           // pserver.RecieveEndSignal += pserver_RecieveEndSignal;
             button1.Enabled = false;
             button2.Enabled = true;
         }

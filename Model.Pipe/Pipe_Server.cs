@@ -9,9 +9,9 @@ namespace VocalUtau.WavTools.Model.Pipe
 {
     public class Pipe_Server : MarshalByRefObject
     {
-        public delegate void RecievePipeStreamHandler(long BufferLength,byte[] BufferData);
+        public delegate void RecievePipeStreamHandler(long BufferLength, byte[] BufferData, string PipeName);
         public event RecievePipeStreamHandler RecievePipeStream;
-        public delegate void RecieveEndSignalHandler(Int64 SignalData);
+        public delegate void RecieveEndSignalHandler(Int64 SignalData, string PipeName);
         public event RecieveEndSignalHandler RecieveEndSignal;
 
         string PipeName = "VocalUtau.WavTool";
@@ -64,14 +64,16 @@ namespace VocalUtau.WavTools.Model.Pipe
                 1,
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough);
-            hand = pipeStream.BeginWaitForConnection(WaitForConnectionAsyncCallback, pipeStream);
+            hand = pipeStream.BeginWaitForConnection(WaitForConnectionAsyncCallback, new object[]{pipeStream,PipeName});
         }
         private void WaitForConnectionAsyncCallback(IAsyncResult result)
         {
             long BufferSize = 0;
             long OvrSize = 0;
             Console.WriteLine("Client connected.");
-            NamedPipeServerStream pipeStream = (NamedPipeServerStream)result.AsyncState;
+            object[] objs=(object[])result.AsyncState;
+            NamedPipeServerStream pipeStream = (NamedPipeServerStream)objs[0];
+            string pipName = (string)objs[1];
             try
             {
                 pipeStream.EndWaitForConnection(result);
@@ -124,7 +126,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                 StartServer();
                 if (Signal == -1)//ExitSignal
                 {
-                    if (RecieveEndSignal != null) RecieveEndSignal(SignalData);
+                    if (RecieveEndSignal != null) RecieveEndSignal(SignalData, pipName);
                 }
                 else if (Signal == -2)//OvrSignal
                 {
@@ -143,7 +145,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     bufferWriter.Flush();
                     bufferWriter.Seek(0, SeekOrigin.Current);
                     bufferPosition = bufferWriter.BaseStream.Position;
-                    if (RecievePipeStream != null) RecievePipeStream(BufferSize, bufdat);
+                    if (RecievePipeStream != null) RecievePipeStream(BufferSize, bufdat, pipName);
                 }
             }
             catch { ;}

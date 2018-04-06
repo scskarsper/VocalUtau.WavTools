@@ -7,6 +7,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.Client",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.BPlayer", "VocalUtau.Wavtools.BPlayer\VocalUtau.Wavtools.BPlayer.csproj", "{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Wavtools.Render", "VocalUtau.Wavtools.Render\VocalUtau.Wavtools.Render.csproj", "{5CF6DF17-5CE2-40E0-98A2-D70E8E89F7F8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Calculators", "..\VocalUtau.Calculators\VocalUtau.Calculators\VocalUtau.Calculators.csproj", "{EC62095F-B97C-4C45-999A-6213EF3009E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VocalUtau.Formats", "..\VocalUtau.Formats\VocalUtau.Formats\VocalUtau.Formats.csproj", "{9EA2955F-3919-4939-BB75-0B38F4E6182D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +31,18 @@ Global
 		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD7DF8F8-DD29-40BA-B757-B1B6E1F05B55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5CF6DF17-5CE2-40E0-98A2-D70E8E89F7F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5CF6DF17-5CE2-40E0-98A2-D70E8E89F7F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5CF6DF17-5CE2-40E0-98A2-D70E8E89F7F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5CF6DF17-5CE2-40E0-98A2-D70E8E89F7F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC62095F-B97C-4C45-999A-6213EF3009E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC62095F-B97C-4C45-999A-6213EF3009E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC62095F-B97C-4C45-999A-6213EF3009E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC62095F-B97C-4C45-999A-6213EF3009E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EA2955F-3919-4939-BB75-0B38F4E6182D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EA2955F-3919-4939-BB75-0B38F4E6182D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EA2955F-3919-4939-BB75-0B38F4E6182D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EA2955F-3919-4939-BB75-0B38F4E6182D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
