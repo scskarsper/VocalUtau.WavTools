@@ -3,37 +3,104 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace VocalUtau.Wavtools.Render
 {
     class Program
     {
+        static CommandPipe_Client client = null;
+        static CachePlayerCommander cmder;
+        static CommandPipe_Server cmdReciever;
+        static Dictionary<CachePlayer, bool> FinishFlag = new Dictionary<CachePlayer, bool>();
         static void Main(string[] args)
         {
-            CachePlayer Cplayer = new CachePlayer();
-            List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList = new List<Calculators.NoteListCalculator.NotePreRender>();
-            using (System.IO.FileStream ms = new System.IO.FileStream(@"D:\\temp.binary", System.IO.FileMode.Open))
+            Console.WriteLine("CreateNamedPipe:" + System.Diagnostics.Process.GetCurrentProcess().Id);
+            FinishFlag.Clear();
+            int Instance = int.Parse(args[0]);
+            if (Instance > 0)
             {
-                //序列化操作，把内存中的东西写到硬盘中
-                System.Runtime.Serialization.Formatters.Binary.BinaryFormatter fomatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter(null, new System.Runtime.Serialization.StreamingContext(System.Runtime.Serialization.StreamingContextStates.File));
-                object obj=fomatter.Deserialize(ms);
-                ms.Flush();
-                NList = (List<VocalUtau.Calculators.NoteListCalculator.NotePreRender>)obj;
+                cmdReciever = new CommandPipe_Server(System.Diagnostics.Process.GetCurrentProcess().Id);
+                cmdReciever.OnRecieve += cmdReciever_OnRecieve;
+                client = new CommandPipe_Client(Instance);
+
+                string temp = System.Environment.GetEnvironmentVariable("TEMP");
+                DirectoryInfo info = new DirectoryInfo(temp);
+                DirectoryInfo baseDir = info.CreateSubdirectory("Chorista\\Instance." + Instance);
+
+                Dictionary<int, CachePlayer> CplayerList = new Dictionary<int, CachePlayer>();// = new CachePlayer();
+                Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>> RST = new Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>>();
+                using (System.IO.FileStream ms = new System.IO.FileStream(baseDir.FullName + @"\\RendCmd.binary", System.IO.FileMode.Open))
+                {
+                    //序列化操作，把内存中的东西写到硬盘中
+                    System.Runtime.Serialization.Formatters.Binary.BinaryFormatter fomatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter(null, new System.Runtime.Serialization.StreamingContext(System.Runtime.Serialization.StreamingContextStates.File));
+                    object obj = fomatter.Deserialize(ms);
+                    ms.Flush();
+                    RST = (Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>>)obj;
+                }
+                for (int i = 0; i < RST.Count; i++)
+                {
+                    CplayerList.Add(i, new CachePlayer());
+                    FinishFlag.Add(CplayerList[i], false);
+                    CplayerList[i].BufferEmpty_Pause += Program_BufferEmpty_Pause;
+                    CplayerList[i].BufferEmpty_Resume+=Program_BufferEmpty_Resume;
+                    CplayerList[i].PlayFinished += Program_PlayFinished;
+                    Task.Factory.StartNew((object prm) => { 
+                        object[] prms = (object[])prm;
+                        CachePlayer cplayer = (CachePlayer)prms[0];
+                        DirectoryInfo TempDir=(DirectoryInfo)prms[1];
+                        List<Calculators.NoteListCalculator.NotePreRender> NList = (List<Calculators.NoteListCalculator.NotePreRender>)prms[2];
+                        cplayer.StartRending(TempDir, NList);
+                    }, new object[] { CplayerList[i],baseDir, RST[i] });
+                }
+                cmder = new CachePlayerCommander(CplayerList);
+                cmder.PlayAll();
+                Console.ReadLine();
             }
+        }
 
-            string temp = System.Environment.GetEnvironmentVariable("TEMP");
-            DirectoryInfo info = new DirectoryInfo(temp);
-            DirectoryInfo baseDir = info.CreateSubdirectory("hymn1");
+        static void cmdReciever_OnRecieve(string data)
+        {
+            try
+            {
+                switch (data)
+                {
+                    case "Cmd:Play": cmder.PlayAll(); break;
+                    case "Cmd:Pause": cmder.PauseAll(); break;
+                    case "Cmd:Stop": cmder.StopAll(); break;
+                }
+            }
+            catch { ;}
+        }
 
-            Cplayer.Play();
-            Cplayer.StartRending(baseDir,NList);
-            Console.ReadLine();
-            Cplayer.Pause();
-            Console.WriteLine("Pause");
-            Console.ReadLine();
-            Cplayer.Stop();
-            Console.WriteLine("Stop");
-            Console.ReadLine();
+        static void Program_PlayFinished(object sender)
+        {
+            CachePlayer obj = (CachePlayer)sender;
+            FinishFlag[obj] = false;
+            if (!FinishFlag.ContainsValue(true))
+            {
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
+        }
+
+        static void Program_BufferEmpty_Resume(object sender)
+        {
+            client.SendData("Buffer:Play");
+            Console.WriteLine("Play");
+            try
+            {
+                cmder.PlayAll();
+            }catch{;}
+        }
+
+        static void Program_BufferEmpty_Pause(object sender)
+        {
+            Console.WriteLine("Empty");
+            client.SendData("Buffer:Empty");
+            try
+            {
+                cmder.PauseAll();
+            }catch{;}
         }
     }
 }

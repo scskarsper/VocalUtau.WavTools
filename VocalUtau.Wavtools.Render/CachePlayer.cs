@@ -31,6 +31,7 @@ namespace VocalUtau.Wavtools.Render
 
         public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler BufferEmpty_Pause;
         public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler BufferEmpty_Resume;
+        public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler PlayFinished;
 
         NAudio.Wave.PlaybackState _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
 
@@ -74,8 +75,9 @@ namespace VocalUtau.Wavtools.Render
                 if (bufferedWaveProvider.BufferedDuration.TotalMilliseconds == 0 && TailLength == 0 && Bs.Position == Bs.Length)
                 {
                     Stop();
+                    if (PlayFinished != null) PlayFinished(this);
                 }else
-                    if (TailLength >0 && bufferedWaveProvider.BufferedDuration.TotalMilliseconds>200 && bufferedWaveProvider.BufferedDuration.TotalMilliseconds < 500)
+                    if (!_isBufferEmpty && TailLength > 0 && bufferedWaveProvider.BufferedDuration.TotalMilliseconds >= 0 && bufferedWaveProvider.BufferedDuration.TotalMilliseconds < 500)
                     {
                         _isBufferEmpty = true;
                         Pause();
@@ -93,6 +95,11 @@ namespace VocalUtau.Wavtools.Render
         }
         bool _ExitRending = false;
         bool _isBufferEmpty = false;
+
+        public bool IsBufferEmpty
+        {
+            get { return _isBufferEmpty; }
+        }
         public void Play()
         {
             if (_PlayingStatus == NAudio.Wave.PlaybackState.Paused)
@@ -237,6 +244,7 @@ namespace VocalUtau.Wavtools.Render
 
         public void StartRending(System.IO.DirectoryInfo baseTempDir,List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList,string RendToWav="")
         {
+            _ExitRending = false;
             prebufftime = defprebufftime;
             string ProcessIDStr = Process.GetCurrentProcess().Id.ToString();
             DirectoryInfo tempDir = baseTempDir.CreateSubdirectory("temp");

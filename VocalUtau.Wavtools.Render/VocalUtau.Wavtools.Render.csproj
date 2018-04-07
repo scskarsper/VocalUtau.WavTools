@@ -47,6 +47,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachePlayer.cs" />
+    <Compile Include="CachePlayerCommander.cs" />
+    <Compile Include="CommandPipe_Client.cs" />
+    <Compile Include="CommandPipe_Server.cs" />
     <Compile Include="MD5Helper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
