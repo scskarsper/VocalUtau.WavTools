@@ -43,9 +43,9 @@ namespace VocalUtau.WavTools.Model.Pipe
         }
         public void LockWavFile()
         {
-            Console.WriteLine("WaitSemaphore");
+            if(!_NoShowText) Console.WriteLine("WaitSemaphore");
             semaphore.WaitOne();
-            Console.WriteLine("GetSemaphore");
+            if(!_NoShowText) Console.WriteLine("GetSemaphore");
         }
         public void UnLockWavFile()
         {
@@ -54,24 +54,30 @@ namespace VocalUtau.WavTools.Model.Pipe
                 semaphore.Release();
             }
             catch { ;}
-            Console.WriteLine("ReleaseSemaphore");
+            if(!_NoShowText) Console.WriteLine("ReleaseSemaphore");
         }
+        bool _NoShowText = false;
 
+        public bool NoShowText
+        {
+            get { return _NoShowText; }
+            set { _NoShowText = value; }
+        }
         public void Append(string WavFileName, double offset, double length,
         double ovr, List<KeyValuePair<double, double>> KV, double DropTime = 0)
         {
-            Console.WriteLine("Ask For Overlap time:{0}", ovr);
+            if(!_NoShowText) Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
-            Console.WriteLine("Wav Appending");
+            if (!_NoShowText) Console.WriteLine("Wav Appending");
             WavAppender.AppendWork(bufferstream, WavFileName, offset, length,
                 ovr, KV,DropTime);
         }
         public void Append(Stream InputRiffStream, double offset, double length,
-        double ovr, List<KeyValuePair<double, double>> KV,double DropTime=0)
+        double ovr, List<KeyValuePair<double, double>> KV, double DropTime = 0)
         {
-            Console.WriteLine("Ask For Overlap time:{0}", ovr);
+            if (!_NoShowText) Console.WriteLine("Ask For Overlap time:{0}", ovr);
             FillOvr(ovr);
-            Console.WriteLine("Wav Appending");
+            if (!_NoShowText) Console.WriteLine("Wav Appending");
             WavAppender.AppendWork(bufferstream, InputRiffStream, offset, length,
                 ovr, KV,DropTime);
         }
@@ -92,7 +98,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     }
                     catch (TimeoutException)
                     {
-                        Console.WriteLine("Timeout error!");
+                        if(!_NoShowText) Console.WriteLine("Timeout error!");
                         return;
                     }
                     BinaryReader sr = new BinaryReader(pipeStream);
@@ -124,14 +130,14 @@ namespace VocalUtau.WavTools.Model.Pipe
                     catch { ;}
                     bufferstream.Write(ResponByte, 0, ResponByte.Length);
                     isFilled = true;
-                    Console.WriteLine("Asked OK! BufferSize:{0},TotalRecieve:{1}", OvrBufferSize,ResponByte.Length);
+                    if(!_NoShowText) Console.WriteLine("Asked OK! BufferSize:{0},TotalRecieve:{1}", OvrBufferSize,ResponByte.Length);
                 }
                 catch { ;}
             }
         }
         public void Flush()
         {
-            Console.WriteLine("Buffer Flushing");
+            if(!_NoShowText) Console.WriteLine("Buffer Flushing");
             SendBuffer(OvrBufferSize);
             Renew();
         }
@@ -149,7 +155,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     }
                     catch (TimeoutException)
                     {
-                        Console.WriteLine("Timeout error!");
+                        if(!_NoShowText) Console.WriteLine("Timeout error!");
                         semaphore.Release();
                         return;
                     }
@@ -162,7 +168,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     sw.Write(byt, 0, byt.Length);
                     sw.Flush();
                     sw.Close();
-                    Console.WriteLine("Sended OK! BufferSize:{0},TotalStream:{1}",ByteLength,ByteLength+4+8+8);
+                    if(!_NoShowText) Console.WriteLine("Sended OK! BufferSize:{0},TotalStream:{1}",ByteLength,ByteLength+4+8+8);
                 }
                 catch {}
             }
@@ -182,7 +188,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     }
                     catch (TimeoutException)
                     {
-                        Console.WriteLine("Timeout error!");
+                        if(!_NoShowText) Console.WriteLine("Timeout error!");
                         return;
                     }
                     BinaryWriter sw = new BinaryWriter(pipeStream);
@@ -190,7 +196,7 @@ namespace VocalUtau.WavTools.Model.Pipe
                     sw.Write(SignalData);
                     sw.Flush();
                     sw.Close();
-                    Console.WriteLine("Sended OK! End Signal,SignalCode:-1,Data:{0}",SignalData);
+                    if(!_NoShowText) Console.WriteLine("Sended OK! End Signal,SignalCode:-1,Data:{0}",SignalData);
                 }
                 catch { ; }
             }

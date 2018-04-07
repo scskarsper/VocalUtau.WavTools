@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -19,8 +20,19 @@ namespace VocalUtau.Wavtools.Render
                 ms.Flush();
                 NList = (List<VocalUtau.Calculators.NoteListCalculator.NotePreRender>)obj;
             }
+
+            string temp = System.Environment.GetEnvironmentVariable("TEMP");
+            DirectoryInfo info = new DirectoryInfo(temp);
+            DirectoryInfo baseDir = info.CreateSubdirectory("hymn1");
+
             Cplayer.Play();
-            Cplayer.StartRending(NList);
+            Cplayer.StartRending(baseDir,NList);
+            Console.ReadLine();
+            Cplayer.Pause();
+            Console.WriteLine("Pause");
+            Console.ReadLine();
+            Cplayer.Stop();
+            Console.WriteLine("Stop");
             Console.ReadLine();
         }
     }

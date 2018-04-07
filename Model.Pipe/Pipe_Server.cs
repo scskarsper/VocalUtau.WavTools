@@ -23,6 +23,15 @@ namespace VocalUtau.WavTools.Model.Pipe
         bool Exit = false;
         NamedPipeServerStream pipeStream;
         IAsyncResult hand;
+        public bool isListening { get; set; }
+
+        bool _NoShowText = false;
+
+        public bool NoShowText
+        {
+            get { return _NoShowText; }
+            set { _NoShowText = value; }
+        }
 
         public Pipe_Server(string PipeName)
         {
@@ -32,6 +41,7 @@ namespace VocalUtau.WavTools.Model.Pipe
             this.PipeName = PipeName;
             bufferPosition = 0;
             this.bufferStartPosition = 0;
+            this.isListening = false;
         }
         public Pipe_Server(string PipeName,Stream BaseStream,int bufferStartPosition=0)
         {
@@ -41,6 +51,7 @@ namespace VocalUtau.WavTools.Model.Pipe
             bufferPosition = bufferStartPosition;
             this.bufferStartPosition = bufferStartPosition;
             this.PipeName = PipeName;
+            this.isListening = false;
         }
 
 
@@ -56,6 +67,7 @@ namespace VocalUtau.WavTools.Model.Pipe
             }
             pipeStream = null;
             Exit = true;
+            this.isListening = false;
         }
         public void StartServer()
         {
@@ -64,13 +76,14 @@ namespace VocalUtau.WavTools.Model.Pipe
                 1,
                 PipeTransmissionMode.Byte,
                 PipeOptions.Asynchronous | PipeOptions.WriteThrough);
-            hand = pipeStream.BeginWaitForConnection(WaitForConnectionAsyncCallback, new object[]{pipeStream,PipeName});
+            hand = pipeStream.BeginWaitForConnection(WaitForConnectionAsyncCallback, new object[] { pipeStream, PipeName });
+            this.isListening = true;
         }
         private void WaitForConnectionAsyncCallback(IAsyncResult result)
         {
             long BufferSize = 0;
             long OvrSize = 0;
-            Console.WriteLine("Client connected.");
+            if(!NoShowText) Console.WriteLine("Client connected.");
             object[] objs=(object[])result.AsyncState;
             NamedPipeServerStream pipeStream = (NamedPipeServerStream)objs[0];
             string pipName = (string)objs[1];
