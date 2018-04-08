@@ -12,12 +12,9 @@ namespace VocalUtau.Wavtools.Render
         static CommandPipe_Client client = null;
         static CachePlayerCommander cmder;
         static CommandPipe_Server cmdReciever;
-        static Dictionary<CachePlayer, bool> FinishFlag = new Dictionary<CachePlayer, bool>();
-        static Dictionary<CachePlayer, bool> ReadyFlag = new Dictionary<CachePlayer, bool>();
         static void Main(string[] args)
         {
             Console.WriteLine("CreateNamedPipe:" + System.Diagnostics.Process.GetCurrentProcess().Id);
-            FinishFlag.Clear();
             int Instance = int.Parse(args[0]);
             if (Instance > 0)
             {
@@ -42,11 +39,6 @@ namespace VocalUtau.Wavtools.Render
                 for (int i = 0; i < RST.Count; i++)
                 {
                     CplayerList.Add(i, new CachePlayer());
-                    FinishFlag.Add(CplayerList[i], false);
-                    ReadyFlag.Add(CplayerList[i], true);
-                    /*[i].BufferEmpty_Pause += Program_BufferEmpty_Pause;
-                    CplayerList[i].BufferEmpty_Resume+=Program_BufferEmpty_Resume;
-                    CplayerList[i].PlayFinished += Program_PlayFinished;*/
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
                         CachePlayer cplayer = (CachePlayer)prms[0];
@@ -55,7 +47,8 @@ namespace VocalUtau.Wavtools.Render
                         cplayer.StartRending(TempDir, NList);
                     }, new object[] { CplayerList[i],baseDir, RST[i] });
                 }
-                cmder = new CachePlayerCommander(CplayerList);
+                cmder = new CachePlayerCommander(CplayerList); 
+                cmder.PlayFinished += Program_PlayFinished;
                 cmder.PlayAll();
                 Console.ReadLine();
             }
@@ -77,40 +70,7 @@ namespace VocalUtau.Wavtools.Render
 
         static void Program_PlayFinished(object sender)
         {
-            CachePlayer obj = (CachePlayer)sender;
-            FinishFlag[obj] = false;
-            if (!FinishFlag.ContainsValue(true))
-            {
-                System.Diagnostics.Process.GetCurrentProcess().Kill();
-            }
-        }
-
-        static void Program_BufferEmpty_Resume(object sender)
-        {
-            CachePlayer obj = (CachePlayer)sender;
-            ReadyFlag[obj] = true;
-            client.SendData("Buffer:Play");
-            Console.WriteLine("Play");
-            if (!ReadyFlag.ContainsValue(false))
-            {
-                try
-                {
-                    cmder.PlayAll();
-                }
-                catch { ;}
-            }
-        }
-
-        static void Program_BufferEmpty_Pause(object sender)
-        {
-            CachePlayer obj = (CachePlayer)sender;
-            ReadyFlag[obj] = false;
-            Console.WriteLine("Empty");
-            client.SendData("Buffer:Empty");
-            try
-            {
-                cmder.PauseAll();
-            }catch{;}
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
 }

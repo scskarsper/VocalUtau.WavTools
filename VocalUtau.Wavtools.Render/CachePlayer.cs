@@ -26,24 +26,11 @@ namespace VocalUtau.Wavtools.Render
         string PlayingFile = "";
 
         WaveStreamProvider wsp;
-        WaveOut waveOut;
-        //BufferedWaveProvider _bufferedWaveProvider = null;
+        DirectSoundOut waveOut;
+//        WaveOut waveOut;
 
-        //public BufferedWaveProvider BufferedWaveProvider
-        //{
-        //    get { return _bufferedWaveProvider; }
-        //}
         public event VocalUtau.Wavtools.Render.WaveStreamProvider.OnSyncPositionHandler SyncPosition;
 
-        public void FillBufferSample()
-        {
-            byte[] buf = new byte[1024];
-            int len = Bs.Read(buf, 0, buf.Length);
-        //    _bufferedWaveProvider.AddSamples(buf, 0, len);
-        }
-
-        internal event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler CallTimer_Stop;
-        internal event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler CallTimer_Start;
 
         NAudio.Wave.PlaybackState _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
 
@@ -58,32 +45,19 @@ namespace VocalUtau.Wavtools.Render
             {
                 this.CacheSignal = CacheSignal;
             }
-            //timer.Elapsed += timer_Elapsed;
-            //timer.Enabled = false;
             _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
 
-            waveOut = new WaveOut();
+            waveOut = new DirectSoundOut();// new WaveOut();
             FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
             long TailLength = fh.Ms2Bytes(prebufftime);
             wsp = new WaveStreamProvider(IOHelper.NormalPcmMono16_Format, Bs, IOHelper.NormalPcmMono16_HeadLength, TailLength);
             wsp.SyncPosition += wsp_SyncPosition;
             waveOut.Init(wsp);
-          //  _bufferedWaveProvider = new BufferedWaveProvider(IOHelper.NormalPcmMono16_Format);
-          //  waveOut.Init(_bufferedWaveProvider);
         }
 
         void wsp_SyncPosition(Stream Stream)
         {
             if (SyncPosition != null) SyncPosition(Stream);
-        }
-
-        void Timer_Stop()
-        {
-            if (CallTimer_Stop != null) CallTimer_Stop(this);
-        }
-        void Timer_Start()
-        {
-            if (CallTimer_Start != null) CallTimer_Start(this);
         }
 
         public bool IsFull
@@ -102,35 +76,8 @@ namespace VocalUtau.Wavtools.Render
             }
         }
 
-        public bool CheckBufferStatus(long Position)
-        {
-            FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
-            long TailLength = fh.Ms2Bytes(prebufftime);
-            return (+TailLength < Bs.Length);
-        }
-
-        public void ResetPosition(long Value)
-        {
-            Position = Value;
-           // _bufferedWaveProvider.ClearBuffer();
-        }
-
-        public enum CacheStatus
-        {
-            Normal,
-            Finished,
-            BufferEmpty,
-            BufferResume,
-            Full
-        }
-
         bool _ExitRending = false;
-        bool _isBufferEmpty = false;
 
-        public bool IsBufferEmpty
-        {
-            get { return _isBufferEmpty; }
-        }
         public void Play()
         {
             if (_PlayingStatus == NAudio.Wave.PlaybackState.Paused)
@@ -144,14 +91,11 @@ namespace VocalUtau.Wavtools.Render
                 _PlayingStatus = NAudio.Wave.PlaybackState.Playing;
                 waveOut.Play();
             }
-            _isBufferEmpty = false;
         }
         public void Stop()
         {
-            _isBufferEmpty = false;
             _ExitRending = true;
             _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
-            //timer.Enabled = false;
             waveOut.Stop();
             Bs.Close();
             try
