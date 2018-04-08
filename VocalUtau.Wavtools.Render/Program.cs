@@ -13,6 +13,7 @@ namespace VocalUtau.Wavtools.Render
         static CachePlayerCommander cmder;
         static CommandPipe_Server cmdReciever;
         static Dictionary<CachePlayer, bool> FinishFlag = new Dictionary<CachePlayer, bool>();
+        static Dictionary<CachePlayer, bool> ReadyFlag = new Dictionary<CachePlayer, bool>();
         static void Main(string[] args)
         {
             Console.WriteLine("CreateNamedPipe:" + System.Diagnostics.Process.GetCurrentProcess().Id);
@@ -42,9 +43,10 @@ namespace VocalUtau.Wavtools.Render
                 {
                     CplayerList.Add(i, new CachePlayer());
                     FinishFlag.Add(CplayerList[i], false);
-                    CplayerList[i].BufferEmpty_Pause += Program_BufferEmpty_Pause;
+                    ReadyFlag.Add(CplayerList[i], true);
+                    /*[i].BufferEmpty_Pause += Program_BufferEmpty_Pause;
                     CplayerList[i].BufferEmpty_Resume+=Program_BufferEmpty_Resume;
-                    CplayerList[i].PlayFinished += Program_PlayFinished;
+                    CplayerList[i].PlayFinished += Program_PlayFinished;*/
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
                         CachePlayer cplayer = (CachePlayer)prms[0];
@@ -58,7 +60,7 @@ namespace VocalUtau.Wavtools.Render
                 Console.ReadLine();
             }
         }
-
+        
         static void cmdReciever_OnRecieve(string data)
         {
             try
@@ -85,16 +87,24 @@ namespace VocalUtau.Wavtools.Render
 
         static void Program_BufferEmpty_Resume(object sender)
         {
+            CachePlayer obj = (CachePlayer)sender;
+            ReadyFlag[obj] = true;
             client.SendData("Buffer:Play");
             Console.WriteLine("Play");
-            try
+            if (!ReadyFlag.ContainsValue(false))
             {
-                cmder.PlayAll();
-            }catch{;}
+                try
+                {
+                    cmder.PlayAll();
+                }
+                catch { ;}
+            }
         }
 
         static void Program_BufferEmpty_Pause(object sender)
         {
+            CachePlayer obj = (CachePlayer)sender;
+            ReadyFlag[obj] = false;
             Console.WriteLine("Empty");
             client.SendData("Buffer:Empty");
             try

@@ -3,7 +3,6 @@ using System.Text;
 
 public class MD5Helper
 {
-    private static MD5 md5 = MD5.Create();
 
     //使用utf8编码将字符串散列
     public static string GetMD5HashString(string sourceStr)
@@ -14,6 +13,7 @@ public class MD5Helper
     //使用指定编码将字符串散列
     public static string GetMD5HashString(Encoding encode, string sourceStr)
     {
+        MD5 md5 = MD5.Create();
         StringBuilder sb = new StringBuilder();
 
         byte[] source = md5.ComputeHash(encode.GetBytes(sourceStr));
