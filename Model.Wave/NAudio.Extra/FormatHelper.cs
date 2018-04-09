@@ -56,6 +56,7 @@ namespace VocalUtau.WavTools.Model.Wave.NAudio.Extra
 
             SortedDictionary<double, double> ValuePoint = new SortedDictionary<double, double>();
             ValuePoint.Add(0, 0);//添加起点
+            if (outputFrames == 0) outputFrames = 1;
             ValuePoint.Add(outputFrames, 0);//添加末点
             if(totalFrames>outputFrames)ValuePoint.Add(totalFrames, 0);//添加终点
             //PS+P1+P2+P5  --  P3+P4+PE

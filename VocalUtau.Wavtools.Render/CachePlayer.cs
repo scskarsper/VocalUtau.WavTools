@@ -22,12 +22,18 @@ namespace VocalUtau.Wavtools.Render
         double prebufftime = 1000;
         Pipe_Server pserver;
         FileStream Fs;
-        FileStream Bs;
+        FileStream Bs=null;
+
+        public FileStream BufferPlayStream
+        {
+            get { return Bs; }
+            set { Bs = value; }
+        }
         string PlayingFile = "";
 
         WaveStreamProvider wsp;
-        DirectSoundOut waveOut;
-//        WaveOut waveOut;
+//        DirectSoundOut waveOut;
+        WaveOut waveOut;
 
         public event VocalUtau.Wavtools.Render.WaveStreamProvider.OnSyncPositionHandler SyncPosition;
 
@@ -47,7 +53,7 @@ namespace VocalUtau.Wavtools.Render
             }
             _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
 
-            waveOut = new DirectSoundOut();// new WaveOut();
+            waveOut = new WaveOut();// new DirectSoundOut();// new WaveOut();
             FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
             long TailLength = fh.Ms2Bytes(prebufftime);
             wsp = new WaveStreamProvider(IOHelper.NormalPcmMono16_Format, Bs, IOHelper.NormalPcmMono16_HeadLength, TailLength);
@@ -98,6 +104,7 @@ namespace VocalUtau.Wavtools.Render
             _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
             waveOut.Stop();
             Bs.Close();
+            Bs = null;
             try
             {
                 File.Delete(PlayingFile);
@@ -282,6 +289,7 @@ namespace VocalUtau.Wavtools.Render
                 else
                 {
                     Bs.Close();
+                    Bs = null;
                 }
                 File.Copy(TrackFileName, RendToWav, true);
                 try
