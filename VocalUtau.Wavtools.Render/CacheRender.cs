@@ -15,33 +15,30 @@ using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.Wavtools.Render
 {
-    internal class CachePlayer
+    internal class CacheRender
     {
         long headSize = 0;
-        const double defprebufftime = 1000;
-        double prebufftime = 1000;
         Pipe_Server pserver;
         FileStream Fs;
-        FileStream Bs=null;
 
-        public FileStream BufferPlayStream
+        string _RendingFile = "";
+
+        public string RendingFile
         {
-            get { return Bs; }
-            set { Bs = value; }
+            get { return _RendingFile; }
         }
-        string PlayingFile = "";
 
-        WaveStreamProvider wsp;
-//        DirectSoundOut waveOut;
-        WaveOut waveOut;
+        bool _IsRending = false;
 
-        public event VocalUtau.Wavtools.Render.WaveStreamProvider.OnSyncPositionHandler SyncPosition;
-
-
-        NAudio.Wave.PlaybackState _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
+        public bool IsRending
+        {
+            get { return _IsRending; }
+            set { _IsRending = value; }
+        }
+        public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler RendingStateChange;
 
         string CacheSignal = "";
-        public CachePlayer(string CacheSignal="")
+        public CacheRender(string CacheSignal="")
         {
             if (CacheSignal == "")
             {
@@ -51,76 +48,16 @@ namespace VocalUtau.Wavtools.Render
             {
                 this.CacheSignal = CacheSignal;
             }
-            _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
-
-            waveOut = new WaveOut();// new DirectSoundOut();// new WaveOut();
-            FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
-            long TailLength = fh.Ms2Bytes(prebufftime);
-            wsp = new WaveStreamProvider(IOHelper.NormalPcmMono16_Format, Bs, IOHelper.NormalPcmMono16_HeadLength, TailLength);
-            wsp.SyncPosition += wsp_SyncPosition;
-            waveOut.Init(wsp);
         }
 
-        void wsp_SyncPosition(Stream Stream)
-        {
-            if (SyncPosition != null) SyncPosition(Stream);
-        }
-
-        public bool IsFull
-        {
-            get { return (Bs.Position >= Bs.Length) && (wsp.UnreadableTail == 0); }
-        }
-        public long Position
-        {
-            get
-            {
-                return Bs.Position;
-            }
-            set
-            {
-                if (Bs.Position < Bs.Length) Bs.Position = value;
-            }
-        }
 
         bool _ExitRending = false;
 
-        public void Play()
-        {
-            if (_PlayingStatus == NAudio.Wave.PlaybackState.Paused)
-            {
-                _PlayingStatus = NAudio.Wave.PlaybackState.Playing;
-                waveOut.Play();
-            }
-            else
-            {
-                _ExitRending = false;
-                _PlayingStatus = NAudio.Wave.PlaybackState.Playing;
-                waveOut.Play();
-            }
-        }
-        public void Stop()
+        public void StopRending()
         {
             _ExitRending = true;
-            _PlayingStatus = NAudio.Wave.PlaybackState.Stopped;
-            waveOut.Stop();
-            Bs.Close();
-            Bs = null;
-            try
-            {
-                File.Delete(PlayingFile);
-            }
-            catch { ;}
-            PlayingFile = "";
         }
-        public void Pause()
-        {
-            if (_PlayingStatus == NAudio.Wave.PlaybackState.Playing)
-            {
-                waveOut.Pause();
-                _PlayingStatus = NAudio.Wave.PlaybackState.Paused;
-            }
 
-        }
         public bool isReady
         {
             get
@@ -136,16 +73,11 @@ namespace VocalUtau.Wavtools.Render
         private long InitFile(string TrackFileName)
         {
             Fs = new FileStream(TrackFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
-            Bs = new FileStream(TrackFileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            PlayingFile = TrackFileName;
+            _RendingFile = TrackFileName;
             byte[] head = IOHelper.GenerateHead();
             Fs.Write(head, 0, head.Length);
             Fs.Seek(head.Length, SeekOrigin.Begin);
             return head.Length;
-        }
-        public void StartStaticWave(string wavfile)
-        {
-            Bs = new FileStream(wavfile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         Dictionary<int, string> ResamplerCacheDic = new Dictionary<int, string>();
@@ -225,11 +157,10 @@ namespace VocalUtau.Wavtools.Render
 
         public void StartRending(System.IO.DirectoryInfo baseTempDir,List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList,string RendToWav="")
         {
+            _IsRending = true;
             _ExitRending = false;
-            prebufftime = defprebufftime;
-            FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
-            long TailLength = fh.Ms2Bytes(prebufftime);
-            wsp.UnreadableTail = TailLength;
+            if (RendingStateChange != null) RendingStateChange(this);
+
             string ProcessIDStr = Process.GetCurrentProcess().Id.ToString();
             DirectoryInfo tempDir = baseTempDir.CreateSubdirectory("temp");
             DirectoryInfo cacheDir = baseTempDir.CreateSubdirectory("cache");
@@ -237,7 +168,6 @@ namespace VocalUtau.Wavtools.Render
             string TrackFileName = tempDir.FullName + "\\Track_" + CacheSignal + ".wav";
 
             headSize = InitFile(TrackFileName);
-            wsp.BasicStream = Bs;
             pserver = new Pipe_Server("VocalUtau.WavTool." + ProcessIDStr + ".Track_" + CacheSignal, Fs, (int)headSize);
             pserver.NoShowText = true;
             pserver.StartServer();
@@ -269,8 +199,7 @@ namespace VocalUtau.Wavtools.Render
                 pclient.UnLockWavFile();
                 pclient.Dispose();
             }
-            prebufftime = 0;
-            wsp.UnreadableTail = 0;
+            _IsRending = false;
             pserver.ExitServer();
             long total = Fs.Length;
             byte[] head = IOHelper.GenerateHead((int)(total - headSize));
@@ -280,17 +209,9 @@ namespace VocalUtau.Wavtools.Render
             Fs.Close();
             t.Wait();
             _ExitRending = false;
+            if (RendingStateChange != null) RendingStateChange(this);
             if (RendToWav != "")
             {
-                if (_PlayingStatus == NAudio.Wave.PlaybackState.Playing || _PlayingStatus==NAudio.Wave.PlaybackState.Paused)
-                {
-                    Stop();
-                }
-                else
-                {
-                    Bs.Close();
-                    Bs = null;
-                }
                 File.Copy(TrackFileName, RendToWav, true);
                 try
                 {

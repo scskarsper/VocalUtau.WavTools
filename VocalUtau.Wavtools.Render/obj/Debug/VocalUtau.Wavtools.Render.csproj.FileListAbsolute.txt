@@ -23,3 +23,4 @@ D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\B
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\obj\Debug\VocalUtau.Wavtools.Render.csprojResolveAssemblyReference.cache
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\VocalUtau.WavTools.dll
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\VocalUtau.WavTools.pdb
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\VocalUtau.Wavtools.Render\bin\Debug\NUniversalCharDet.pdb

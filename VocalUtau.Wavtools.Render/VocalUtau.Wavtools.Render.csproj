@@ -33,9 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAudio, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\NAudio\NAudio.dll</HintPath>
+    <Reference Include="NAudio">
+      <HintPath>..\..\VocalUtau.DirectUI\Demo.USTViewer\bin\Debug\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,8 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CachePlayer.cs" />
-    <Compile Include="CachePlayerCommander.cs" />
+    <Compile Include="CacheRender.cs" />
+    <Compile Include="PlayCommander.cs" />
     <Compile Include="CommandPipe_Client.cs" />
     <Compile Include="CommandPipe_Server.cs" />
     <Compile Include="MD5Helper.cs" />

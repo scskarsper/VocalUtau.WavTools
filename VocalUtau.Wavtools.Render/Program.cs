@@ -9,8 +9,13 @@ namespace VocalUtau.Wavtools.Render
 {
     class Program
     {
+        /// <summary>
+        /// ISSUE:发现问题002：同步之后，偶见连接异常。
+        /// 建议：取消PipeC/S架构通信，直接内部渲染
+        /// </summary>
+
         static CommandPipe_Client client = null;
-        static CachePlayerCommander cmder;
+        static PlayCommander cmder;
         static CommandPipe_Server cmdReciever;
         static void Main(string[] args)
         {
@@ -26,7 +31,7 @@ namespace VocalUtau.Wavtools.Render
                 DirectoryInfo info = new DirectoryInfo(temp);
                 DirectoryInfo baseDir = info.CreateSubdirectory("Chorista\\Instance." + Instance);
 
-                Dictionary<int, CachePlayer> CplayerList = new Dictionary<int, CachePlayer>();// = new CachePlayer();
+                Dictionary<int, CacheRender> CplayerList = new Dictionary<int, CacheRender>();// = new CachePlayer();
                 Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>> RST = new Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>>();
                 using (System.IO.FileStream ms = new System.IO.FileStream(baseDir.FullName + @"\\RendCmd.binary", System.IO.FileMode.Open))
                 {
@@ -38,22 +43,35 @@ namespace VocalUtau.Wavtools.Render
                 }
                 for (int i = 0; i < RST.Count; i++)
                 {
-                    CplayerList.Add(i, new CachePlayer());
+                    CplayerList.Add(i, new CacheRender());
+                    CplayerList[i].RendingStateChange += (object sender) => {
+                        CacheRender cr = (CacheRender)sender;
+                        int Key=-1;
+                        foreach(KeyValuePair<int,CacheRender> kv in CplayerList)
+                        {
+                            if (kv.Value == cr)
+                            {
+                                Key = kv.Key;
+                                break;
+                            }
+                        }
+                        if(cmder!=null)cmder.SetupRendingStatus(Key, cr.IsRending);
+                    };
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
-                        CachePlayer cplayer = (CachePlayer)prms[0];
+                        CacheRender cplayer = (CacheRender)prms[0];
                         DirectoryInfo TempDir=(DirectoryInfo)prms[1];
                         List<Calculators.NoteListCalculator.NotePreRender> NList = (List<Calculators.NoteListCalculator.NotePreRender>)prms[2];
                         cplayer.StartRending(TempDir, NList);
                     }, new object[] { CplayerList[i],baseDir, RST[i] });
                 }
-                cmder = new CachePlayerCommander(CplayerList); 
+                cmder = new PlayCommander(CplayerList);
+                cmder.WaitRendingStart();
                 cmder.PlayFinished += Program_PlayFinished;
                 cmder.PlayAll();
                 Console.ReadLine();
             }
         }
-        
         static void cmdReciever_OnRecieve(string data)
         {
             try
