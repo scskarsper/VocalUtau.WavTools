@@ -21,6 +21,9 @@ namespace VocalUtau.Wavtools.Render
         }
 
         public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler PlayFinished;
+        public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler PlayPaused;
+        public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler PlayPlaying;
+        public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler PlayProcessUpdate;
 
         MutiWave16StreamProvider mwsp = new MutiWave16StreamProvider();
 
@@ -44,6 +47,10 @@ namespace VocalUtau.Wavtools.Render
             {
                 if (PlayFinished != null) PlayFinished(this);
                 SoundOutputer.Stop();
+            }
+            else
+            {
+                if (PlayProcessUpdate != null) PlayProcessUpdate(new object[] { mwsp.PlayPosition, mwsp.CurrentDuration });
             }
         }
 
@@ -79,6 +86,7 @@ namespace VocalUtau.Wavtools.Render
         public void PlayAll()
         {
             SoundOutputer.Play();
+            if (PlayPlaying != null) PlayPlaying(this);
         }
         public void StopAll()
         {
@@ -93,10 +101,12 @@ namespace VocalUtau.Wavtools.Render
                     }catch{;}
                 }
             }
+            if (PlayFinished != null) PlayFinished(this);
         }
         public void PauseAll()
         {
             SoundOutputer.Pause();
+            if (PlayPaused != null) PlayPaused(this);
         }
 
         public void SetupRendingStatus(int Key,bool IsRending)

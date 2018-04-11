@@ -3,3 +3,4 @@ D:\VocalUtau\IncludeLib\VocalUtau.WavTools\obj\Debug\VocalUtau.WavTools.pdb
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\bin\Debug\NAudio.dll
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\bin\Debug\VocalUtau.WavTools.dll
 D:\VocalUtau\IncludeLib\VocalUtau.WavTools\obj\Debug\VocalUtau.WavTools.dll
+D:\VocalUtau\IncludeLib\VocalUtau.WavTools\obj\Debug\VocalUtau.WavTools.csprojResolveAssemblyReference.cache

@@ -1,16 +1,17 @@
-﻿
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using VocalUtau.WavTools;
 using VocalUtau.WavTools.Model.Pipe;
 using VocalUtau.WavTools.Model.Player;
+using VocalUtau.WavTools.Model.Wave;
 using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.Wavtools.Render
@@ -18,8 +19,8 @@ namespace VocalUtau.Wavtools.Render
     internal class CacheRender
     {
         long headSize = 0;
-        Pipe_Server pserver;
-        FileStream Fs;
+     //   Pipe_Server pserver;
+    //    FileStream Fs;
 
         string _RendingFile = "";
 
@@ -58,19 +59,7 @@ namespace VocalUtau.Wavtools.Render
             _ExitRending = true;
         }
 
-        public bool isReady
-        {
-            get
-            {
-                try
-                {
-                    return !pserver.isListening;
-                }
-                catch { return true; }
-            }
-        }
-
-        private long InitFile(string TrackFileName)
+        private long InitFile(out FileStream Fs,string TrackFileName)
         {
             Fs = new FileStream(TrackFileName, FileMode.Create, FileAccess.ReadWrite, FileShare.ReadWrite);
             _RendingFile = TrackFileName;
@@ -154,7 +143,6 @@ namespace VocalUtau.Wavtools.Render
                 catch { ;}
             }
         }
-
         public void StartRending(System.IO.DirectoryInfo baseTempDir,List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList,string RendToWav="")
         {
             _IsRending = true;
@@ -167,10 +155,9 @@ namespace VocalUtau.Wavtools.Render
 
             string TrackFileName = tempDir.FullName + "\\Track_" + CacheSignal + ".wav";
 
-            headSize = InitFile(TrackFileName);
-            pserver = new Pipe_Server("VocalUtau.WavTool." + ProcessIDStr + ".Track_" + CacheSignal, Fs, (int)headSize);
-            pserver.NoShowText = true;
-            pserver.StartServer();
+            FileStream Fs;
+            headSize = InitFile(out Fs,TrackFileName);
+            Semaphore semaphore=new Semaphore(1,1,"VocalUtau.WavTool." + ProcessIDStr + ".Track_" + CacheSignal);
 
             ResamplerCacheDic.Clear();
             Task t = Task.Factory.StartNew(() =>
@@ -187,20 +174,19 @@ namespace VocalUtau.Wavtools.Render
                 if (_ExitRending) break;
                 string MidFileName = ResamplerCacheDic[i];
                 string wavStr = String.Join(" ", NList[i].WavtoolArgList);
-                Pipe_Client pclient = new Pipe_Client("VocalUtau.WavTool." + ProcessIDStr + ".Track_" + CacheSignal, 2000);
-                pclient.NoShowText = true;
-                pclient.LockWavFile();
+               
                 double delay = 0;
                 if (NList[i].passTime > 0) delay = NList[i].passTime;
                 VocalUtau.WavTools.Model.Args.ArgsStruct parg = VocalUtau.WavTools.Model.Args.ArgsParser.parseArgs(NList[i].WavtoolArgList, false);
                 Console.WriteLine("WaveAppending[" + i.ToString() + "/"+(NList.Count-1).ToString()+"]:" + NList[i].Note +(NList[i].Note=="{R}"?"":"  -  " + NList[i].OtoAtom.PhonemeSymbol));
-                pclient.Append(MidFileName, parg.Offset, parg.Length, parg.Ovr, parg.PV, delay);
-                pclient.Flush();
-                pclient.UnLockWavFile();
-                pclient.Dispose();
+
+
+                semaphore.WaitOne();
+                WavAppender.AppendWork(Fs, MidFileName, parg.Offset, parg.Length, parg.Ovr, parg.PV, delay);
+                Fs.Flush();
+                semaphore.Release();
             }
             _IsRending = false;
-            pserver.ExitServer();
             long total = Fs.Length;
             byte[] head = IOHelper.GenerateHead((int)(total - headSize));
             Fs.Seek(0, SeekOrigin.Begin);

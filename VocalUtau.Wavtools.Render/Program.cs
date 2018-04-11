@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace VocalUtau.Wavtools.Render
 {
@@ -19,6 +20,8 @@ namespace VocalUtau.Wavtools.Render
         static CommandPipe_Server cmdReciever;
         static void Main(string[] args)
         {
+            tme.Elapsed += tme_Elapsed;
+            tme.Enabled = false;
             Console.WriteLine("CreateNamedPipe:" + System.Diagnostics.Process.GetCurrentProcess().Id);
             int Instance = int.Parse(args[0]);
             if (Instance > 0)
@@ -65,12 +68,47 @@ namespace VocalUtau.Wavtools.Render
                         cplayer.StartRending(TempDir, NList);
                     }, new object[] { CplayerList[i],baseDir, RST[i] });
                 }
+                ProcessStr = "0/0";
                 cmder = new PlayCommander(CplayerList);
                 cmder.WaitRendingStart();
                 cmder.PlayFinished += Program_PlayFinished;
+                cmder.PlayProcessUpdate += cmder_PlayProcessUpdate;
+                cmder.PlayPlaying += cmder_PlayPlaying;
+                cmder.PlayPaused += cmder_PlayPaused;
                 cmder.PlayAll();
                 Console.ReadLine();
             }
+        }
+
+        static void cmder_PlayPaused(object sender)
+        {
+            client.SendData_ASync("Status:Paused");
+            tme.Enabled = false;
+        }
+
+        static void cmder_PlayPlaying(object sender)
+        {
+            client.SendData_ASync("Status:Playing");
+            tme.Enabled = true;
+        }
+
+        static void tme_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            client.SendData_ASync(ProcessStr);
+        }
+
+        static Timer tme = new Timer(1000);
+        static string ProcessStr = "0/0";
+        static void cmder_PlayProcessUpdate(object sender)
+        {
+            try
+            {
+                object[] or = (object[])sender;
+                string s1 = ((TimeSpan)or[0]).ToString();
+                string s2 = ((TimeSpan)or[1]).ToString();
+                ProcessStr = s1 + "/" + s2;
+            }
+            catch { ;}
         }
         static void cmdReciever_OnRecieve(string data)
         {
@@ -88,6 +126,9 @@ namespace VocalUtau.Wavtools.Render
 
         static void Program_PlayFinished(object sender)
         {
+            ProcessStr = "0/0";
+            client.SendData_ASync("Status:Finished");
+            tme.Enabled = false;
             System.Diagnostics.Process.GetCurrentProcess().Kill();
         }
     }
