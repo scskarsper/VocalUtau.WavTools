@@ -117,9 +117,9 @@ namespace VocalUtau.WavTools.Model.Wave
                 {
                     float oldFrame = 0.0f;
 
-                    float[] oft = ofh.ReadNextSampleFrame();
-                    if (ofh.Length > 0)
+                    if (ofh.Position < ofh.Length && ofh.Length > 0)
                     {
+                        float[] oft = ofh.ReadNextSampleFrame();
                         oldFrame = oft[0];
                         OutputStream.Seek(-1 * fhelper.Samples2Bytes(1), SeekOrigin.Current);
                         overlapFrames--;

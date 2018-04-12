@@ -32,12 +32,18 @@ namespace VocalUtau.Wavtools.Render
         IWavePlayer SoundOutputer = new WasapiOut();
         
 
-        Dictionary<int, CacheRender> clist;
-        public PlayCommander(Dictionary<int, CacheRender> Clist)
+        Dictionary<int, IRender> clist;
+        Dictionary<int, float> cvolume;
+        public PlayCommander(Dictionary<int, IRender> TrackerCacherList)
         {
-            clist = Clist;
+            clist = TrackerCacherList;
             SoundOutputer.Init(mwsp);
             mwsp.SoundProcessed += mwsp_SoundProcessed;
+        }
+
+        public void SetTrackerVolumes(Dictionary<int, float> Volumes)
+        {
+            cvolume = Volumes;
         }
 
         void mwsp_SoundProcessed(object sender)
@@ -57,12 +63,12 @@ namespace VocalUtau.Wavtools.Render
         public void WaitRendingStart()
         {
             List<Task> tasklist = new List<Task>();
-            foreach (KeyValuePair<int, CacheRender> CRK in clist)
+            foreach (KeyValuePair<int, IRender> CRK in clist)
             {
                 Task t=Task.Factory.StartNew((object prm) =>
                 {
-                    CacheRender CRV = (CacheRender)prm;
-                    while (CRV.RendingFile == "" || !System.IO.File.Exists(CRV.RendingFile))
+                    IRender CRV = (IRender)prm;
+                    while (CRV.getRendingFile() == "" || !System.IO.File.Exists(CRV.getRendingFile()))
                     {
                         System.Threading.Thread.Sleep(100);
                     }
@@ -75,11 +81,15 @@ namespace VocalUtau.Wavtools.Render
             FormatHelper fh = new FormatHelper(IOHelper.NormalPcmMono16_Format);
             long TailLength = fh.Ms2Bytes(1000);
 
-            foreach (KeyValuePair<int, CacheRender> CRK in clist)
+            foreach (KeyValuePair<int, IRender> CRK in clist)
             {
                 WaveStreamType wst = new WaveStreamType();
                 wst.UnreadableTail = TailLength;
-                wst.WaveStream = new FileStream(CRK.Value.RendingFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                if (cvolume.ContainsKey(CRK.Key))
+                {
+                    wst.Volume = cvolume[CRK.Key];
+                }
+                wst.WaveStream = new FileStream(CRK.Value.getRendingFile(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 mwsp.InputMap.Add(CRK.Key, wst);
             }
         }

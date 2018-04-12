@@ -48,15 +48,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheRender.cs" />
+    <Compile Include="Renders\BgmRender.cs" />
+    <Compile Include="Renders\CacheRender.cs" />
+    <Compile Include="Renders\IRender.cs" />
     <Compile Include="PlayCommander.cs" />
-    <Compile Include="CommandPipe_Client.cs" />
-    <Compile Include="CommandPipe_Server.cs" />
+    <Compile Include="PipeManagers\CommandPipe_Client.cs" />
+    <Compile Include="PipeManagers\CommandPipe_Server.cs" />
     <Compile Include="MD5Helper.cs" />
-    <Compile Include="MutiWaveStreamProvider.cs" />
+    <Compile Include="AudioProviders\MutiWaveStreamProvider.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WaveStreamProvider.cs" />
+    <Compile Include="AudioProviders\WaveStreamProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\VocalUtau.Calculators\VocalUtau.Calculators\VocalUtau.Calculators.csproj">

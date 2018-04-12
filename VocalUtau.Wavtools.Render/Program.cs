@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
+using VocalUtau.Calculators;
 
 namespace VocalUtau.Wavtools.Render
 {
@@ -34,23 +35,24 @@ namespace VocalUtau.Wavtools.Render
                 DirectoryInfo info = new DirectoryInfo(temp);
                 DirectoryInfo baseDir = info.CreateSubdirectory("Chorista\\Instance." + Instance);
 
-                Dictionary<int, CacheRender> CplayerList = new Dictionary<int, CacheRender>();// = new CachePlayer();
-                Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>> RST = new Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>>();
+                BinaryFileStruct BFS = new BinaryFileStruct();
+
+                Dictionary<int, IRender> CplayerList = new Dictionary<int, IRender>();// = new CachePlayer();
                 using (System.IO.FileStream ms = new System.IO.FileStream(baseDir.FullName + @"\\RendCmd.binary", System.IO.FileMode.Open))
                 {
                     //序列化操作，把内存中的东西写到硬盘中
                     System.Runtime.Serialization.Formatters.Binary.BinaryFormatter fomatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter(null, new System.Runtime.Serialization.StreamingContext(System.Runtime.Serialization.StreamingContextStates.File));
                     object obj = fomatter.Deserialize(ms);
                     ms.Flush();
-                    RST = (Dictionary<int, List<Calculators.NoteListCalculator.NotePreRender>>)obj;
+                    BFS = (BinaryFileStruct)obj;
                 }
-                for (int i = 0; i < RST.Count; i++)
+                for (int i = 0; i < BFS.VocalTrackStructs.Count; i++)
                 {
                     CplayerList.Add(i, new CacheRender());
                     CplayerList[i].RendingStateChange += (object sender) => {
-                        CacheRender cr = (CacheRender)sender;
+                        IRender cr = (IRender)sender;
                         int Key=-1;
-                        foreach(KeyValuePair<int,CacheRender> kv in CplayerList)
+                        foreach(KeyValuePair<int,IRender> kv in CplayerList)
                         {
                             if (kv.Value == cr)
                             {
@@ -58,18 +60,49 @@ namespace VocalUtau.Wavtools.Render
                                 break;
                             }
                         }
-                        if(cmder!=null)cmder.SetupRendingStatus(Key, cr.IsRending);
+                        if(cmder!=null)cmder.SetupRendingStatus(Key, cr.getIsRending());
                     };
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
-                        CacheRender cplayer = (CacheRender)prms[0];
+                        IRender cplayer = (IRender)prms[0];
                         DirectoryInfo TempDir=(DirectoryInfo)prms[1];
                         List<Calculators.NoteListCalculator.NotePreRender> NList = (List<Calculators.NoteListCalculator.NotePreRender>)prms[2];
                         cplayer.StartRending(TempDir, NList);
-                    }, new object[] { CplayerList[i],baseDir, RST[i] });
+                    }, new object[] { CplayerList[i], baseDir, BFS.VocalTrackStructs[i] });
                 }
+
+                for (int j = 0; j < BFS.BarkerTrackStructs.Count; j++)
+                {
+                    int i = BFS.VocalTrackStructs.Count + j;
+                    CplayerList.Add(i, new BgmRender());
+                    CplayerList[i].RendingStateChange += (object sender) =>
+                    {
+                        IRender cr = (IRender)sender;
+                        int Key = -1;
+                        foreach (KeyValuePair<int, IRender> kv in CplayerList)
+                        {
+                            if (kv.Value == cr)
+                            {
+                                Key = kv.Key;
+                                break;
+                            }
+                        }
+                        if (cmder != null) cmder.SetupRendingStatus(Key, cr.getIsRending());
+                    };
+                    Task.Factory.StartNew((object prm) =>
+                    {
+                        object[] prms = (object[])prm;
+                        IRender cplayer = (IRender)prms[0];
+                        DirectoryInfo TempDir = (DirectoryInfo)prms[1];
+                        List<VocalUtau.Calculators.BarkerCalculator.BgmPreRender> NList = (List<VocalUtau.Calculators.BarkerCalculator.BgmPreRender>)prms[2];
+                        cplayer.StartRending(TempDir, NList);
+                    }, new object[] { CplayerList[i], baseDir, BFS.BarkerTrackStructs[j] });
+                }
+
+
                 ProcessStr = "0/0";
                 cmder = new PlayCommander(CplayerList);
+                cmder.SetTrackerVolumes(BFS.VocalTrackVolumes);
                 cmder.WaitRendingStart();
                 cmder.PlayFinished += Program_PlayFinished;
                 cmder.PlayProcessUpdate += cmder_PlayProcessUpdate;
@@ -79,6 +112,7 @@ namespace VocalUtau.Wavtools.Render
                 Console.ReadLine();
             }
         }
+
 
         static void cmder_PlayPaused(object sender)
         {

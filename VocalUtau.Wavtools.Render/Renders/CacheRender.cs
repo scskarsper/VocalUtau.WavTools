@@ -16,7 +16,7 @@ using VocalUtau.WavTools.Model.Wave.NAudio.Extra;
 
 namespace VocalUtau.Wavtools.Render
 {
-    internal class CacheRender
+    internal class CacheRender:IRender
     {
         long headSize = 0;
      //   Pipe_Server pserver;
@@ -28,6 +28,10 @@ namespace VocalUtau.Wavtools.Render
         {
             get { return _RendingFile; }
         }
+        public string getRendingFile()
+        {
+            return _RendingFile;
+        }
 
         bool _IsRending = false;
 
@@ -36,6 +40,11 @@ namespace VocalUtau.Wavtools.Render
             get { return _IsRending; }
             set { _IsRending = value; }
         }
+        public bool getIsRending()
+        {
+            return _IsRending;
+        }
+
         public event VocalUtau.WavTools.Model.Player.BufferedPlayer.BufferEventHandler RendingStateChange;
 
         string CacheSignal = "";
@@ -143,6 +152,8 @@ namespace VocalUtau.Wavtools.Render
                 catch { ;}
             }
         }
+
+        public void StartRending(System.IO.DirectoryInfo baseTempDir, List<VocalUtau.Calculators.BarkerCalculator.BgmPreRender> BList, string RendToWav = "") { ;}
         public void StartRending(System.IO.DirectoryInfo baseTempDir,List<VocalUtau.Calculators.NoteListCalculator.NotePreRender> NList,string RendToWav="")
         {
             _IsRending = true;
@@ -182,7 +193,11 @@ namespace VocalUtau.Wavtools.Render
 
 
                 semaphore.WaitOne();
-                WavAppender.AppendWork(Fs, MidFileName, parg.Offset, parg.Length, parg.Ovr, parg.PV, delay);
+                try
+                {
+                    WavAppender.AppendWork(Fs, MidFileName, parg.Offset, parg.Length, parg.Ovr, parg.PV, delay);
+                }
+                catch { ;}
                 Fs.Flush();
                 semaphore.Release();
             }
