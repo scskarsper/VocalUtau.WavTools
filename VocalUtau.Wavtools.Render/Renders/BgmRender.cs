@@ -103,23 +103,29 @@ namespace VocalUtau.Wavtools.Render
                     using(NAudio.Wave.AudioFileReader reader = new NAudio.Wave.AudioFileReader(BList[i].FilePath))
                     {
                         int JumpLoops = ByteTime / 2;
-                        NAudio.Wave.Wave32To16Stream w16 = new NAudio.Wave.Wave32To16Stream(reader);
-                        while (w16.Position < w16.Length)
+                        //NAudio.Wave.Wave32To16Stream w16 = new NAudio.Wave.Wave32To16Stream(reader);
+                        using(NAudio.Wave.WaveStream wfmt=new WaveFormatConversionStream(IOHelper.NormalPcmMono16_Format,reader))
                         {
-                            if (_ExitRending) break;
-                            byte[] by = new byte[2];
-                            int rd = w16.Read(by, 0, 2);
-                            if (JumpLoops > 0)
+                            using(NAudio.Wave.WaveStream w16=new BlockAlignReductionStream(wfmt))
                             {
-                                JumpLoops--;
-                            }
-                            else
-                            {
-                                Fs.Write(by, 0, 2);
-                            }
-                            for (int w = 1; w < w16.WaveFormat.Channels; w++)
-                            {
-                                int rdr = w16.Read(by, 0, 2);
+                                while (w16.Position < w16.Length)
+                                {
+                                    if (_ExitRending) break;
+                                    byte[] by = new byte[2];
+                                    int rd = w16.Read(by, 0, 2);
+                                    if (JumpLoops > 0)
+                                    {
+                                        JumpLoops--;
+                                    }
+                                    else
+                                    {
+                                        Fs.Write(by, 0, 2);
+                                    }
+                                    for (int w = 1; w < w16.WaveFormat.Channels; w++)
+                                    {
+                                        int rdr = w16.Read(by, 0, 2);
+                                    }
+                                }
                             }
                         }
                     }
