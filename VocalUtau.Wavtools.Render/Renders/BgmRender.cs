@@ -100,30 +100,32 @@ namespace VocalUtau.Wavtools.Render
                 {
                     int ByteTime = (int)(IOHelper.NormalPcmMono16_Format.AverageBytesPerSecond * BList[i].PassTime);
                     ByteTime -= ByteTime % 2;
-                    using(NAudio.Wave.AudioFileReader reader = new NAudio.Wave.AudioFileReader(BList[i].FilePath))
+                    using (NAudio.Wave.AudioFileReader reader = new NAudio.Wave.AudioFileReader(BList[i].FilePath))
                     {
                         int JumpLoops = ByteTime / 2;
-                        //NAudio.Wave.Wave32To16Stream w16 = new NAudio.Wave.Wave32To16Stream(reader);
-                        using(NAudio.Wave.WaveStream wfmt=new WaveFormatConversionStream(IOHelper.NormalPcmMono16_Format,reader))
+                        using (NAudio.Wave.Wave32To16Stream w16 = new NAudio.Wave.Wave32To16Stream(reader))
                         {
-                            using(NAudio.Wave.WaveStream w16=new BlockAlignReductionStream(wfmt))
+                            using (NAudio.Wave.WaveStream wfmt = new NAudio.Wave.BlockAlignReductionStream(w16))
                             {
-                                while (w16.Position < w16.Length)
+                                using (NAudio.Wave.WaveStream wout = new NAudio.Wave.WaveFormatConversionStream(IOHelper.NormalPcmMono16_Format, wfmt))
                                 {
-                                    if (_ExitRending) break;
-                                    byte[] by = new byte[2];
-                                    int rd = w16.Read(by, 0, 2);
-                                    if (JumpLoops > 0)
+                                    while (wout.Position < wout.Length)
                                     {
-                                        JumpLoops--;
-                                    }
-                                    else
-                                    {
-                                        Fs.Write(by, 0, 2);
-                                    }
-                                    for (int w = 1; w < w16.WaveFormat.Channels; w++)
-                                    {
-                                        int rdr = w16.Read(by, 0, 2);
+                                        if (_ExitRending) break;
+                                        byte[] by = new byte[2];
+                                        int rd = wout.Read(by, 0, 2);
+                                        if (JumpLoops > 0)
+                                        {
+                                            JumpLoops--;
+                                        }
+                                        else
+                                        {
+                                            Fs.Write(by, 0, 2);
+                                        }
+                                        /*  for (int w = 1; w < w16.WaveFormat.Channels; w++)
+                                          {
+                                              int rdr = w16.Read(by, 0, 2);
+                                          }*/
                                     }
                                 }
                             }

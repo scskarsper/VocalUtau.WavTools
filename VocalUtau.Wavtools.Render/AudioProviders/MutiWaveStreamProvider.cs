@@ -97,7 +97,6 @@ namespace VocalUtau.Wavtools.Render
             }
             return (short)(value / Count);
         }
-
         long EnableLength
         {
             get
@@ -150,6 +149,14 @@ namespace VocalUtau.Wavtools.Render
             }
         }
 
+        bool _IsEmptyBuffer = false;
+        public bool IsEmptyBuffer
+        {
+            get
+            {
+                return _IsEmptyBuffer;
+            }
+        }
 
         public TimeSpan PlayPosition
         {
@@ -215,6 +222,11 @@ namespace VocalUtau.Wavtools.Render
                 // zero the end of the buffer
                 Array.Clear(buffer, read, count - read);
                 read = count;
+                _IsEmptyBuffer = true;
+            }
+            else
+            {
+                _IsEmptyBuffer = false;
             }
             if(SoundProcessed!=null)SoundProcessed(this);
             return read;

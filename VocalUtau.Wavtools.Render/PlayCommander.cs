@@ -48,15 +48,15 @@ namespace VocalUtau.Wavtools.Render
 
         void mwsp_SoundProcessed(object sender)
         {
-            Console.WriteLine("{0}/{1}", mwsp.PlayPosition, mwsp.CurrentDuration);
             if (mwsp.IsAllFinished)
             {
+                SoundOutputer.Pause();
                 if (PlayFinished != null) PlayFinished(this);
                 SoundOutputer.Stop();
             }
             else
-            {
-                if (PlayProcessUpdate != null) PlayProcessUpdate(new object[] { mwsp.PlayPosition, mwsp.CurrentDuration });
+            {   
+                if (PlayProcessUpdate != null) PlayProcessUpdate(new object[] { mwsp.PlayPosition.TotalMilliseconds, mwsp.CurrentDuration.TotalMilliseconds, mwsp.IsEmptyBuffer });
             }
         }
 
@@ -100,7 +100,7 @@ namespace VocalUtau.Wavtools.Render
         }
         public void StopAll()
         {
-            SoundOutputer.Stop();
+            SoundOutputer.Pause();
             if (mwsp != null && mwsp.InputMap != null)
             {
                 foreach (KeyValuePair<int, WaveStreamType> CRK in mwsp.InputMap)
@@ -112,6 +112,7 @@ namespace VocalUtau.Wavtools.Render
                 }
             }
             if (PlayFinished != null) PlayFinished(this);
+            SoundOutputer.Stop();
         }
         public void PauseAll()
         {

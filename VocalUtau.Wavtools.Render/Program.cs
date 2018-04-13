@@ -19,6 +19,12 @@ namespace VocalUtau.Wavtools.Render
         static CommandPipe_Client client = null;
         static PlayCommander cmder;
         static CommandPipe_Server cmdReciever;
+
+
+        static Dictionary<int, IRender> CplayerList = new Dictionary<int, IRender>();// = new CachePlayer();
+        static Dictionary<int, float> CvolumeList = new Dictionary<int, float>();// = new CachePlayer();
+        static bool _EmptyProgram = false;
+        static double StartTimeMs;
         static void Main(string[] args)
         {
             tme.Elapsed += tme_Elapsed;
@@ -37,7 +43,8 @@ namespace VocalUtau.Wavtools.Render
 
                 BinaryFileStruct BFS = new BinaryFileStruct();
 
-                Dictionary<int, IRender> CplayerList = new Dictionary<int, IRender>();// = new CachePlayer();
+                CplayerList.Clear();
+                CvolumeList.Clear(); 
                 using (System.IO.FileStream ms = new System.IO.FileStream(baseDir.FullName + @"\\RendCmd.binary", System.IO.FileMode.Open))
                 {
                     //序列化操作，把内存中的东西写到硬盘中
@@ -46,22 +53,16 @@ namespace VocalUtau.Wavtools.Render
                     ms.Flush();
                     BFS = (BinaryFileStruct)obj;
                 }
+
+                StartTimeMs = (BFS.StartTimePosition * 1000);
+
+                client.SendData_ASync("Status:Buffering");
+                _EmptyProgram = false;
                 for (int i = 0; i < BFS.VocalTrackStructs.Count; i++)
                 {
                     CplayerList.Add(i, new CacheRender());
-                    CplayerList[i].RendingStateChange += (object sender) => {
-                        IRender cr = (IRender)sender;
-                        int Key=-1;
-                        foreach(KeyValuePair<int,IRender> kv in CplayerList)
-                        {
-                            if (kv.Value == cr)
-                            {
-                                Key = kv.Key;
-                                break;
-                            }
-                        }
-                        if(cmder!=null)cmder.SetupRendingStatus(Key, cr.getIsRending());
-                    };
+                    CvolumeList.Add(i,BFS.VocalTrackVolumes.ContainsKey(i)?BFS.VocalTrackVolumes[i]:1.0f);
+                    CplayerList[i].RendingStateChange += Program_RendingStateChange;
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
                         IRender cplayer = (IRender)prms[0];
@@ -75,6 +76,7 @@ namespace VocalUtau.Wavtools.Render
                 {
                     int i = BFS.VocalTrackStructs.Count + j;
                     CplayerList.Add(i, new BgmRender());
+                    CvolumeList.Add(i, BFS.VocalTrackVolumes.ContainsKey(j) ? BFS.VocalTrackVolumes[j] : 1.0f);
                     CplayerList[i].RendingStateChange += (object sender) =>
                     {
                         IRender cr = (IRender)sender;
@@ -99,18 +101,42 @@ namespace VocalUtau.Wavtools.Render
                     }, new object[] { CplayerList[i], baseDir, BFS.BarkerTrackStructs[j] });
                 }
 
-
-                ProcessStr = "0/0";
                 cmder = new PlayCommander(CplayerList);
-                cmder.SetTrackerVolumes(BFS.VocalTrackVolumes);
+                cmder.SetTrackerVolumes(CvolumeList);
                 cmder.WaitRendingStart();
                 cmder.PlayFinished += Program_PlayFinished;
                 cmder.PlayProcessUpdate += cmder_PlayProcessUpdate;
                 cmder.PlayPlaying += cmder_PlayPlaying;
                 cmder.PlayPaused += cmder_PlayPaused;
-                cmder.PlayAll();
+                ProcessStr = "0/0/False";
+                //如果为空项目，则渲染未开始即结束
+                if (_EmptyProgram)
+                {
+                    cmder.StopAll();
+                }
+                else
+                {
+                    cmder.PlayAll();
+                }
+                _EmptyProgram = false;
                 Console.ReadLine();
             }
+        }
+
+        static void Program_RendingStateChange(object sender)
+        {
+            IRender cr = (IRender)sender;
+            int Key = -1;
+            foreach (KeyValuePair<int, IRender> kv in CplayerList)
+            {
+                if (kv.Value == cr)
+                {
+                    Key = kv.Key;
+                    break;
+                }
+            }
+            _EmptyProgram = !cr.getIsRending();
+            if (cmder != null) cmder.SetupRendingStatus(Key, cr.getIsRending());
         }
 
 
@@ -128,19 +154,24 @@ namespace VocalUtau.Wavtools.Render
 
         static void tme_Elapsed(object sender, ElapsedEventArgs e)
         {
-            client.SendData_ASync(ProcessStr);
+            client.SendData_ASync("Postion:"+ProcessStr);
         }
 
-        static Timer tme = new Timer(1000);
-        static string ProcessStr = "0/0";
+        static Timer tme = new Timer(100);
+        static string ProcessStr = "0/0/False";
         static void cmder_PlayProcessUpdate(object sender)
         {
             try
             {
                 object[] or = (object[])sender;
-                string s1 = ((TimeSpan)or[0]).ToString();
-                string s2 = ((TimeSpan)or[1]).ToString();
-                ProcessStr = s1 + "/" + s2;
+                double t1 = (double)or[0];
+                t1+=StartTimeMs;
+                double t2 = (double)or[1];
+                bool b3=(bool)or[2];
+                t2 += StartTimeMs;
+                string s1 = (t1).ToString();
+                string s2 = (t2).ToString();
+                ProcessStr = s1 + "/" + s2+"/"+b3.ToString();
             }
             catch { ;}
         }
