@@ -113,11 +113,15 @@ namespace VocalUtau.Wavtools.Render
                                 int i2 = (int)ox[1];
                                 if (psi2 != null)
                                 {
-                                    Process p = new Process();
-                                    p.StartInfo = psi2;
-                                    p.Start();
-                                    Console.WriteLine("Resampling[" + i2.ToString() + "/" + (NList.Count - 1).ToString() + "]:" + NList[i2].Note + "  -  " + NList[i2].OtoAtom.PhonemeSymbol);
-                                    p.WaitForExit();
+                                    try
+                                    {
+                                        Process p = new Process();
+                                        p.StartInfo = psi2;
+                                        p.Start();
+                                        Console.WriteLine("Resampling[" + i2.ToString() + "/" + (NList.Count - 1).ToString() + "]:" + NList[i2].Note + "  -  " + NList[i2].OtoAtom.PhonemeSymbol);
+                                        p.WaitForExit();
+                                    }
+                                    catch { Console.WriteLine("Resampling[" + i2.ToString() + "/" + (NList.Count - 1).ToString() + "]:Error"); }
                                 }
                                 lock (ResamplerCacheDic)
                                 {

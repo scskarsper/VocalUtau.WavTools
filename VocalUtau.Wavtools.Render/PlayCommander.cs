@@ -37,7 +37,15 @@ namespace VocalUtau.Wavtools.Render
         public PlayCommander(Dictionary<int, IRender> TrackerCacherList)
         {
             clist = TrackerCacherList;
-            SoundOutputer.Init(mwsp);
+            try
+            {
+                SoundOutputer.Init(mwsp);
+            }
+            catch
+            {
+                SoundOutputer = new WaveOut();
+                SoundOutputer.Init(mwsp);
+            }
             mwsp.SoundProcessed += mwsp_SoundProcessed;
         }
 
