@@ -13,35 +13,30 @@ namespace VocalUtau.Wavtools.Render
     {
         public WaveStreamType()
         {
-            this.Volume = 1.0f;
             this.WaveStream = null;
             this.Tag = null;
             this.Finished = false;
         }
         public WaveStreamType(Stream BaseStream)
         {
-            this.Volume = 1.0f;
             this.WaveStream = BaseStream;
             this.Tag = null;
             this.Finished = false;
         }
         public WaveStreamType(float Volume)
         {
-            this.Volume = Volume;
             this.WaveStream = null;
             this.Tag = null;
             this.Finished = false;
         }
         public WaveStreamType(Stream BaseStream, float Volume)
         {
-            this.Volume = Volume;
             this.WaveStream = BaseStream;
             this.Tag = null;
             this.Finished = false;
         }
         public object Tag { get; set; }
         public Stream WaveStream { get; set; }
-        public float Volume { get; set; }
 
         public bool Finished
         {
@@ -87,6 +82,15 @@ namespace VocalUtau.Wavtools.Render
             set { _Map = value; }
         }
 
+        private Dictionary<int, float> _TrackVolumes = new Dictionary<int, float>();
+
+        public Dictionary<int, float> TrackVolumes
+        {
+            get { return _TrackVolumes; }
+            set { _TrackVolumes = value; }
+        }
+        
+
         short Remix(List<KeyValuePair<short, float>> Buffers)
         {
             int value = 0;
@@ -113,6 +117,14 @@ namespace VocalUtau.Wavtools.Render
                 if (ReadAble == long.MaxValue) return 0;
                 return ReadAble;
             }
+        }
+
+        float _GlobalVolume = 1.0f;
+
+        public float GlobalVolume
+        {
+            get { return _GlobalVolume; }
+            set { _GlobalVolume = value; }
         }
 
         long CurrentPosition
@@ -202,14 +214,19 @@ namespace VocalUtau.Wavtools.Render
                         byte[] Tmp = new byte[2];
                         KP.Value.WaveStream.Read(Tmp, 0, 2);
                         short sample = (short)((Tmp[1] << 8) | Tmp[0]);
-                        var newSample = sample * KP.Value.Volume;
-                        sample = (short)newSample;
-                        SampleTab.Add(new KeyValuePair<short, float>(sample, KP.Value.Volume));
+                        float Volume = 1.0f;
+                        if (TrackVolumes.ContainsKey(KP.Key))
+                        {
+                            Volume = TrackVolumes[KP.Key];
+                        }
+                        SampleTab.Add(new KeyValuePair<short, float>(sample, Volume));
                     }
                     short MixedSample = 0;
                     if(SampleTab.Count>0)MixedSample=Remix(SampleTab);
                     if (MixedSample > Int16.MaxValue) MixedSample = Int16.MaxValue;
                     else if (MixedSample < Int16.MinValue) MixedSample = Int16.MinValue;
+
+                    MixedSample = (short)((float)MixedSample * GlobalVolume);
 
                     buffer[offset++] = (byte)(MixedSample & 0xFF);
                     buffer[offset++] = (byte)(MixedSample >> 8);

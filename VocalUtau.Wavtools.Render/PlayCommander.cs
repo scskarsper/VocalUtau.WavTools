@@ -33,7 +33,6 @@ namespace VocalUtau.Wavtools.Render
         
 
         Dictionary<int, IRender> clist;
-        Dictionary<int, float> cvolume;
         public PlayCommander(Dictionary<int, IRender> TrackerCacherList)
         {
             clist = TrackerCacherList;
@@ -51,7 +50,7 @@ namespace VocalUtau.Wavtools.Render
 
         public void SetTrackerVolumes(Dictionary<int, float> Volumes)
         {
-            cvolume = Volumes;
+            mwsp.TrackVolumes = Volumes;
         }
 
         void mwsp_SoundProcessed(object sender)
@@ -65,6 +64,21 @@ namespace VocalUtau.Wavtools.Render
             else
             {   
                 if (PlayProcessUpdate != null) PlayProcessUpdate(new object[] { mwsp.PlayPosition.TotalMilliseconds, mwsp.CurrentDuration.TotalMilliseconds, mwsp.IsEmptyBuffer });
+            }
+        }
+
+        public void SetGlobalVolume(float Volume)
+        {
+            mwsp.GlobalVolume = Volume;
+        }
+        public void SetTrackVolume(int TrackID,float Volume)
+        {
+            if(mwsp.TrackVolumes.ContainsKey(TrackID))
+            {
+                mwsp.TrackVolumes[TrackID]=Volume;
+            }else
+            {
+                mwsp.TrackVolumes.Add(TrackID,Volume);
             }
         }
 
@@ -93,10 +107,6 @@ namespace VocalUtau.Wavtools.Render
             {
                 WaveStreamType wst = new WaveStreamType();
                 wst.UnreadableTail = TailLength;
-                if (cvolume.ContainsKey(CRK.Key))
-                {
-                    wst.Volume = cvolume[CRK.Key];
-                }
                 wst.WaveStream = new FileStream(CRK.Value.getRendingFile(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 mwsp.InputMap.Add(CRK.Key, wst);
             }

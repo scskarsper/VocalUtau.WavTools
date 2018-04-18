@@ -22,7 +22,6 @@ namespace VocalUtau.Wavtools.Render
 
 
         static Dictionary<int, IRender> CplayerList = new Dictionary<int, IRender>();// = new CachePlayer();
-        static Dictionary<int, float> CvolumeList = new Dictionary<int, float>();// = new CachePlayer();
         static bool _EmptyProgram = false;
         static double StartTimeMs;
         static void Main(string[] args)
@@ -44,7 +43,6 @@ namespace VocalUtau.Wavtools.Render
                 BinaryFileStruct BFS = new BinaryFileStruct();
 
                 CplayerList.Clear();
-                CvolumeList.Clear(); 
                 using (System.IO.FileStream ms = new System.IO.FileStream(baseDir.FullName + @"\\RendCmd.binary", System.IO.FileMode.Open))
                 {
                     //序列化操作，把内存中的东西写到硬盘中
@@ -61,7 +59,6 @@ namespace VocalUtau.Wavtools.Render
                 for (int i = 0; i < BFS.VocalTrackStructs.Count; i++)
                 {
                     CplayerList.Add(i, new CacheRender());
-                    CvolumeList.Add(i,BFS.VocalTrackVolumes.ContainsKey(i)?BFS.VocalTrackVolumes[i]:1.0f);
                     CplayerList[i].RendingStateChange += Program_RendingStateChange;
                     Task.Factory.StartNew((object prm) => { 
                         object[] prms = (object[])prm;
@@ -76,7 +73,6 @@ namespace VocalUtau.Wavtools.Render
                 {
                     int i = BFS.VocalTrackStructs.Count + j;
                     CplayerList.Add(i, new BgmRender());
-                    CvolumeList.Add(i, BFS.VocalTrackVolumes.ContainsKey(j) ? BFS.VocalTrackVolumes[j] : 1.0f);
                     CplayerList[i].RendingStateChange += (object sender) =>
                     {
                         IRender cr = (IRender)sender;
@@ -102,7 +98,8 @@ namespace VocalUtau.Wavtools.Render
                 }
 
                 cmder = new PlayCommander(CplayerList);
-                cmder.SetTrackerVolumes(CvolumeList);
+                cmder.SetTrackerVolumes(BFS.TrackVolumes);
+                cmder.SetGlobalVolume(BFS.GlobalVolume);
                 cmder.WaitRendingStart();
                 cmder.PlayFinished += Program_PlayFinished;
                 cmder.PlayProcessUpdate += cmder_PlayProcessUpdate;
@@ -179,11 +176,23 @@ namespace VocalUtau.Wavtools.Render
         {
             try
             {
-                switch (data)
+                string[] cm = data.Split(':');
+                if (cm[0] == "Cmd")
                 {
-                    case "Cmd:Play": cmder.PlayAll(); break;
-                    case "Cmd:Pause": cmder.PauseAll(); break;
-                    case "Cmd:Stop": cmder.StopAll(); break;
+                    switch (cm[1])
+                    {
+                        case "Play": cmder.PlayAll(); break;
+                        case "Pause": cmder.PauseAll(); break;
+                        case "Stop": cmder.StopAll(); break;
+                    }
+                }
+                else if (cm[0] == "Volume")
+                {
+                    switch (cm[1])
+                    {
+                        case "Global": float fl = float.Parse(cm[2]); cmder.SetGlobalVolume(fl); break;
+                        case "Track": int tl = int.Parse(cm[2]); float ftl = float.Parse(cm[3]); cmder.SetTrackVolume(tl, ftl); break;
+                    }
                 }
             }
             catch { ;}
